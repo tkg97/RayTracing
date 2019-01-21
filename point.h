@@ -14,3 +14,16 @@ class Vector{
         double k;
         Vector(double a, double b, double c):i(a), j(b), k(c){}
 };
+
+class Ray{
+    Point source;
+    Vector direction;
+    public:
+        Ray(Point& p, Vector& v):source(p), direction(v){}
+        Point getSource(){
+            return source;
+        }
+        Vector getDirection(){
+            return direction;
+        }
+};
