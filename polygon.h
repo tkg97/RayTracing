@@ -29,21 +29,18 @@ class Polygon{
              Point p0 = coordinates[0];
              Vector rd = r1.getDirection();
              Vector normal = getNormal();
-             double x1 = normal.i;
-             double x2 = normal.j;
-             double x3 = normal.k;
              double a1 = r0.x - p0.x;
              double a2 = r0.y - p0.y;
              double a3 = r0.z - p0.z;
-             double b1 = rd.i;
-             double b2 = rd.j;
-             double b3 = rd.k;
-             double t = 0-(x1*a1 + x2*a2 + x3*a3)/(x1*b1 + x2*b2 + x3*b3);
-             Point intersection(r0.x+rd.i*t,r0.y+rd.j*t,r0.z+rd.k*t);
-             Point *p = new Point(r0.x+rd.i*t,r0.y+rd.j*t,r0.z+rd.k*t);
+             Vector v(a1,a2,a3);
+             if(abs(dotProduct(normal,rd))<=0.00001){
+                  return nullptr;
+             }
+             double t = -(dotProduct(normal,v))/(dotProduct(normal,rd));
+             Point intersection = AddPointVector(r0, MultiplyVectorDouble(t,rd));
              bool c = isContained(intersection);
              if(c)
-                return p;   
+                return &intersection;   
              else
                 return NULL;
         }
