@@ -4,23 +4,33 @@
 #include "point.h"
 using namespace std;
 
-class Sphere{
-    double radius;
-    Point center;
-
+class quadric{
+    //  ax^2 + by^2 + cz^2 + 2fyz + 2gzx + 2hxy + 2px + 2qy + 2rz + d =0.
+    double a, b, c, f, g, h, p, q, r, d;
     double getFunctionValue(double x1, double y1, double z1, double x2, double y2, double z2){
-        return (x1*x2 + y1*y2 + z1*z2 - (center.x)*(x1+x2) - (center.y)*(y1+y2) - (center.z)*(z1+z2) + 
-        ((center.x)*(center.x) + (center.y)*(center.y) + (center.z)*(center.z) - radius*radius));
+        return (a*x1*x2 + b*y1*y2 + c*z1*z2 + f*(y1*z2 + y2*z1) + g*(z1*x2 + z2*x1) + h*(x1*y2 + x2*y1) + 
+        p*(x1+x2) + q*(y1+y2) + r*(z1+z2) + d);
     }
     public:
-        Sphere(double r, Point& p):radius(r), center(p){}
+        quadric(double d1, double d2, double d3, double d4, double d5, double d6, double d7, double d8, double d9, double d10){
+            a = d1;
+            b = d2;
+            c = d3;
+            f = d4;
+            g = d5;
+            h = d6;
+            p = d7;
+            q = d8;
+            r = d9;
+            d = d10;
+        }
         
-        Vector getNormal(Point p){
-            double i = p.x - center.x;
-            double j = p.y - center.y;
-            double k = p.z - center.z;
+        Vector getNormal(Point& pt){
+            double i = a*(pt.x) + g*(pt.z) + h*(pt.y) + p; // factor of 2 is removed as normalization will be done
+            double j = b*(pt.y) + f*(pt.z) + h*(pt.x) + q;
+            double k = c*(pt.z) + f*(pt.y) + g*(pt.x) + r;
             double norm = sqrt(i*i + j*j + k*k);
-            Vector normal(i/norm, j/norm, k/norm);
+            Vector normal(i/norm,j/norm,k/norm);
             return normal;
         }
 
