@@ -52,14 +52,13 @@ double dotProduct(Vector p1, Vector p2){
     return uv;
 }
 
-Vector getSubtractionVector(Point p2, Point p1){
-    double x = p1.x - p2.x;
-    double y = p1.y - p2.y;
-    double z = p1.z - p2.z;
+Vector getSubtractionVector(Point p1, Point p2){
+    double x = p2.x - p1.x;
+    double y = p2.y - p1.y;
+    double z = p2.z - p1.z;
     Vector v(x,y,z);
     return v;
 } 
-
 
 
 class Ray{
