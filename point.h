@@ -1,5 +1,8 @@
 #pragma once
 
+#include <math.h>
+using namespace std;
+
 class Vector{
     public:
         double i;
@@ -59,7 +62,6 @@ Vector getSubtractionVector(Point p1, Point p2){
     Vector v(x,y,z);
     return v;
 } 
-
 
 class Ray{
     Point source;
