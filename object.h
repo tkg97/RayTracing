@@ -27,6 +27,7 @@ class Object{
         double getPhongExponent(){
             return phongExponent;
         }
+        IntersectionPoint* getIntersection(Ray& r);
 };
 
 class Sphere : public Object{
@@ -37,19 +38,20 @@ class Sphere : public Object{
         return (x1*x2 + y1*y2 + z1*z2 - (center.x)*(x1+x2) - (center.y)*(y1+y2) - (center.z)*(z1+z2) + 
         ((center.x)*(center.x) + (center.y)*(center.y) + (center.z)*(center.z) - radius*radius));
     }
+
+    Vector getNormal(Point p){
+        double i = p.x - center.x;
+        double j = p.y - center.y;
+        double k = p.z - center.z;
+        double norm = sqrt(i*i + j*j + k*k);
+        Vector normal(i/norm, j/norm, k/norm);
+        return normal;
+    }
+
     public:
         Sphere(double rad, Point& pt, vector<double> a, vector<double> d, vector<double> s, double r, double p): Object(a, d, s, r, p), radius(rad), center(pt){}
-        
-        Vector getNormal(Point p){
-            double i = p.x - center.x;
-            double j = p.y - center.y;
-            double k = p.z - center.z;
-            double norm = sqrt(i*i + j*j + k*k);
-            Vector normal(i/norm, j/norm, k/norm);
-            return normal;
-        }
 
-        Point* getIntersection(Ray r){
+        IntersectionPoint* getIntersection(Ray& r){
             Point raySource = r.getSource();
             Vector rayDirection = r.getDirection();
             double a = getFunctionValue(rayDirection.i, rayDirection.j, rayDirection.k, rayDirection.i, rayDirection.j, rayDirection.k);
@@ -78,7 +80,9 @@ class Sphere : public Object{
             }
             if(t<0) return nullptr;
             else{
-                return &(AddPointVector(raySource, MultiplyVectorDouble(t, rayDirection)));
+                Point l = (AddPointVector(raySource, MultiplyVectorDouble(t, rayDirection)));
+                Vector n = getNormal(l);
+                return (new IntersectionPoint(l, n, t));
             }
         }
 };
@@ -124,16 +128,20 @@ class Box : public Object{
             storeReferencePoints();
         }
 
-        Point* getIntersection(Ray r){
+        IntersectionPoint* getIntersection(Ray& r){
             Point raySource = r.getSource();
             Vector rayDirection = r.getDirection(); 
             double tEnterMax = DBL_MIN, tLeaveMin = DBL_MAX;
+            Vector n(0,0,0); // Initialised to be a zero vector // normal
             for(int i=0;i<6;i++){
                 if(dotProduct(rayDirection, normals[i]) == 0) continue;
                 if(dotProduct(rayDirection, normals[i]) <0){
                     //ray is entering
                     double t = -dotProduct(getSubtractionVector(referencePoints[i], raySource), normals[i])/(dotProduct(rayDirection, normals[i]));
-                    if(t>tEnterMax) tEnterMax = t;
+                    if(t>tEnterMax){
+                        tEnterMax = t;
+                        n = normals[i];
+                    }
                 }
                 else{
                     double t = -dotProduct(getSubtractionVector(referencePoints[i], raySource), normals[i])/(dotProduct(rayDirection, normals[i]));
@@ -142,7 +150,8 @@ class Box : public Object{
             }
             if(tEnterMax > tLeaveMin) return nullptr;
             else{
-                return &(AddPointVector(raySource, MultiplyVectorDouble(tEnterMax, rayDirection)));
+                Point l = (AddPointVector(raySource, MultiplyVectorDouble(tEnterMax, rayDirection)));
+                return (new IntersectionPoint(l, n, tEnterMax));
             }
         }
 };
@@ -154,6 +163,16 @@ class quadric : public Object{
         return (a*x1*x2 + b*y1*y2 + c*z1*z2 + f*(y1*z2 + y2*z1) + g*(z1*x2 + z2*x1) + h*(x1*y2 + x2*y1) + 
         p*(x1+x2) + q*(y1+y2) + r*(z1+z2) + d);
     }
+
+    Vector getNormal(Point& pt){
+        double i = a*(pt.x) + g*(pt.z) + h*(pt.y) + p; // factor of 2 is removed as normalization will be done
+        double j = b*(pt.y) + f*(pt.z) + h*(pt.x) + q;
+        double k = c*(pt.z) + f*(pt.y) + g*(pt.x) + r;
+        double norm = sqrt(i*i + j*j + k*k);
+        Vector normal(i/norm,j/norm,k/norm);
+        return normal;
+    }
+
     public:
         quadric(double d1, double d2, double d3, double d4, double d5, double d6, double d7, double d8, double d9, double d10, vector<double> a, vector<double> d, vector<double> s, double r, double p): Object(a, d, s, r, p){
             this->a = d1;
@@ -167,17 +186,8 @@ class quadric : public Object{
             this->r = d9;
             this->d = d10;
         }
-        
-        Vector getNormal(Point& pt){
-            double i = a*(pt.x) + g*(pt.z) + h*(pt.y) + p; // factor of 2 is removed as normalization will be done
-            double j = b*(pt.y) + f*(pt.z) + h*(pt.x) + q;
-            double k = c*(pt.z) + f*(pt.y) + g*(pt.x) + r;
-            double norm = sqrt(i*i + j*j + k*k);
-            Vector normal(i/norm,j/norm,k/norm);
-            return normal;
-        }
 
-        Point* getIntersection(Ray r){
+        IntersectionPoint* getIntersection(Ray& r){
             Point raySource = r.getSource();
             Vector rayDirection = r.getDirection();
             double a = getFunctionValue(rayDirection.i, rayDirection.j, rayDirection.k, rayDirection.i, rayDirection.j, rayDirection.k);
@@ -206,7 +216,9 @@ class quadric : public Object{
             }
             if(t<0) return nullptr;
             else{
-                return &(AddPointVector(raySource, MultiplyVectorDouble(t, rayDirection)));
+                Point l = (AddPointVector(raySource, MultiplyVectorDouble(t, rayDirection)));
+                Vector n = getNormal(l);
+                return (new IntersectionPoint(l, n, t));
             }
         }
 };
@@ -297,6 +309,16 @@ class Polygon : public Object{
         // Return true if count is odd, false otherwise 
         return count&1;  // Same as (count%2 == 1) 
     }
+
+    // return normal to the polygon using 3 corner points
+    Vector getNormal(){
+        Point p1 = coordinates[0];
+        Point p2 = coordinates[1];
+        Point p3 = coordinates[2];
+        Vector normal = crossProduct(p1,p2,p3);
+        return normal;
+    }
+
     public:
         Polygon(int t, vector<Point> & v, vector<double> a, vector<double> d, vector<double> s, double r, double p): Object(a, d, s, r, p){
             n=t;
@@ -304,18 +326,9 @@ class Polygon : public Object{
                coordinates.push_back(v[i]); 
             }
         }
-
-        // return normal to the polygon using 3 corner points
-        Vector getNormal(){
-             Point p1 = coordinates[0];
-             Point p2 = coordinates[1];
-             Point p3 = coordinates[2];
-             Vector normal = crossProduct(p1,p2,p3);
-             return normal;
-        }
         
         // get the intersection of ray with the polygon
-        Point* getIntersection(Ray r1){
+        IntersectionPoint* getIntersection(Ray& r1){
              Point r0 = r1.getSource();
              Point p0 = coordinates[0];
              Vector rd = r1.getDirection();
@@ -331,10 +344,8 @@ class Polygon : public Object{
              Point intersection = AddPointVector(r0, MultiplyVectorDouble(t,rd));
              bool c = isContained(intersection);
              if(c)
-                return &intersection;   
+                return (new IntersectionPoint(intersection, getNormal(), t));   
              else
-                return NULL;
-        }
-        
-               
+                return nullptr;
+        }     
 };

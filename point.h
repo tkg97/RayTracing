@@ -19,6 +19,23 @@ class Point{
         Point(double a, double b, double c):x(a), y(b), z(c){}
 };
 
+class IntersectionPoint{
+    Point location; // location of the intersection
+    Vector normal; // normal at the location of intersection
+    double rayParameter; //p0 + tp1 // tha value of t
+    public:
+        IntersectionPoint(Point&p, Vector& n, double r) : location(p), normal(n), rayParameter(r){}
+        Point getLocation(){
+            return location;
+        }
+        Vector getNormal(){
+            return normal;
+        }
+        double getRayParameter(){
+            return rayParameter;
+        }
+};
+
 Vector MultiplyVectorDouble(const double a, const Vector& v){
     Vector result = v;
     result.i *= a;
