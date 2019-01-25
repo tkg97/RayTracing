@@ -1,6 +1,7 @@
 #pragma once
 
-#include <bits/stdc++.h>
+#include <vector>
+#include <algorithm>
 #include "point.h"
 using namespace std;
 
@@ -10,8 +11,10 @@ class Object{
     vector<double> specularCoefficient;
     double refractiveIndex;
     double phongExponent;
+	double reflectionConstant;
+	double refractionConstant;
     public:
-        Object(vector<double> a, vector<double> d, vector<double> s, double r, double p) : ambientCoefficient(a), diffuseCoefficient(d), specularCoefficient(s), refractiveIndex(r), phongExponent(p){}
+        Object(vector<double> a, vector<double> d, vector<double> s, double r, double p, double c1, double c2) : ambientCoefficient(a), diffuseCoefficient(d), specularCoefficient(s), refractiveIndex(r), phongExponent(p), reflectionConstant(c1), refractionConstant(c2){}
         vector<double> getAmbientCoefficient(){
             return ambientCoefficient;
         }
@@ -27,7 +30,14 @@ class Object{
         double getPhongExponent(){
             return phongExponent;
         }
-        IntersectionPoint* getIntersection(Ray& r);
+        double getReflectionConstant(){
+            return reflectionConstant;
+        }
+        double getRefractionConstant(){
+            return refractionConstant;
+        }
+        virtual IntersectionPoint* getIntersection(Ray& r, double minThreshold) = 0;
+        // minThreshold will help me handle the case for t==0
 };
 
 class Sphere : public Object{
@@ -49,9 +59,9 @@ class Sphere : public Object{
     }
 
     public:
-        Sphere(double rad, Point& pt, vector<double> a, vector<double> d, vector<double> s, double r, double p): Object(a, d, s, r, p), radius(rad), center(pt){}
+        Sphere(double rad, Point& pt, vector<double> a, vector<double> d, vector<double> s, double r, double p, double c1, double c2): Object(a, d, s, r, p, c1, c2), radius(rad), center(pt){}
 
-        IntersectionPoint* getIntersection(Ray& r){
+        IntersectionPoint* getIntersection(Ray& r, double minThreshold){
             Point raySource = r.getSource();
             Vector rayDirection = r.getDirection();
             double a = getFunctionValue(rayDirection.i, rayDirection.j, rayDirection.k, rayDirection.i, rayDirection.j, rayDirection.k);
@@ -66,21 +76,21 @@ class Sphere : public Object{
                 else{
                     double t1 = (-b - sqrt(b*b - 4*a*c))/(2*a);
                     double t2 = (-b + sqrt(b*b - 4*a*c))/(2*a);
-                    if(t1>=0 && t2>=0){
+                    if(t1>=minThreshold && t2>=minThreshold){
                         t = min(t1, t2);
                     }
-                    else if(t1>=0){
+                    else if(t1>=minThreshold){
                         t = t1;
                     }
-                    else if(t2>=0){
+                    else if(t2>=minThreshold){
                         t = t2;
                     }
                     else t = -1;
                 }
             }
-            if(t<0) return nullptr;
+            if(t<minThreshold) return nullptr;
             else{
-                Point l = (AddPointVector(raySource, MultiplyVectorDouble(t, rayDirection)));
+                Point l = (addPointVector(raySource, multiplyVectorDouble(t, rayDirection)));
                 Vector n = getNormal(l);
                 return (new IntersectionPoint(l, n, t));
             }
@@ -123,16 +133,17 @@ class Box : public Object{
     }
     
     public:
-        Box(vector<Point>& v, vector<double> a, vector<double> d, vector<double> s, double r, double p): Object(a, d, s, r, p), coordinates(v){
+        Box(vector<Point>& v, vector<double> a, vector<double> d, vector<double> s, double r, double p, double c1, double c2) : Object(a, d, s, r, p, c1, c2), coordinates(v){
             calculateAllNormals();
             storeReferencePoints();
         }
 
-        IntersectionPoint* getIntersection(Ray& r){
+        IntersectionPoint* getIntersection(Ray& r, double minThreshold){
             Point raySource = r.getSource();
             Vector rayDirection = r.getDirection(); 
             double tEnterMax = DBL_MIN, tLeaveMin = DBL_MAX;
-            Vector n(0,0,0); // Initialised to be a zero vector // normal
+            Vector nEnter(0, 0, 0); // Initialised to be a zero vector // normal
+			Vector nLeave(0, 0, 0); // Initialised to be a zero vector // normal
             for(int i=0;i<6;i++){
                 if(dotProduct(rayDirection, normals[i]) == 0) continue;
                 if(dotProduct(rayDirection, normals[i]) <0){
@@ -140,18 +151,27 @@ class Box : public Object{
                     double t = -dotProduct(getSubtractionVector(referencePoints[i], raySource), normals[i])/(dotProduct(rayDirection, normals[i]));
                     if(t>tEnterMax){
                         tEnterMax = t;
-                        n = normals[i];
+                        nEnter = normals[i];
                     }
                 }
                 else{
                     double t = -dotProduct(getSubtractionVector(referencePoints[i], raySource), normals[i])/(dotProduct(rayDirection, normals[i]));
-                    if(t<tLeaveMin) tLeaveMin = t;
+					if (t < tLeaveMin) {
+						tLeaveMin = t;
+						nLeave = normals[i];
+					}
                 }
             }
             if(tEnterMax > tLeaveMin) return nullptr;
             else{
-                Point l = (AddPointVector(raySource, MultiplyVectorDouble(tEnterMax, rayDirection)));
-                return (new IntersectionPoint(l, n, tEnterMax));
+				if (tEnterMax >= minThreshold) {
+					Point l = (addPointVector(raySource, multiplyVectorDouble(tEnterMax, rayDirection)));
+					return (new IntersectionPoint(l, nEnter, tEnterMax));
+				}
+				else {
+					Point l = (addPointVector(raySource, multiplyVectorDouble(tLeaveMin, rayDirection)));
+					return (new IntersectionPoint(l, nLeave, tLeaveMin));
+				}
             }
         }
 };
@@ -174,7 +194,8 @@ class quadric : public Object{
     }
 
     public:
-        quadric(double d1, double d2, double d3, double d4, double d5, double d6, double d7, double d8, double d9, double d10, vector<double> a, vector<double> d, vector<double> s, double r, double p): Object(a, d, s, r, p){
+        quadric(double d1, double d2, double d3, double d4, double d5, double d6, double d7, double d8, double d9, double d10,
+			vector<double> a, vector<double> d, vector<double> s, double r, double p, double c1, double c2) : Object(a, d, s, r, p, c1, c2){
             this->a = d1;
             this->b = d2;
             this->c = d3;
@@ -187,7 +208,7 @@ class quadric : public Object{
             this->d = d10;
         }
 
-        IntersectionPoint* getIntersection(Ray& r){
+        IntersectionPoint* getIntersection(Ray& r, double minThreshold){
             Point raySource = r.getSource();
             Vector rayDirection = r.getDirection();
             double a = getFunctionValue(rayDirection.i, rayDirection.j, rayDirection.k, rayDirection.i, rayDirection.j, rayDirection.k);
@@ -202,21 +223,21 @@ class quadric : public Object{
                 else{
                     double t1 = (-b - sqrt(b*b - 4*a*c))/(2*a);
                     double t2 = (-b + sqrt(b*b - 4*a*c))/(2*a);
-                    if(t1>=0 && t2>=0){
+                    if(t1>=minThreshold && t2>=minThreshold){
                         t = min(t1, t2);
                     }
-                    else if(t1>=0){
+                    else if(t1>=minThreshold){
                         t = t1;
                     }
-                    else if(t2>=0){
+                    else if(t2>=minThreshold){
                         t = t2;
                     }
                     else t = -1;
                 }
             }
-            if(t<0) return nullptr;
+            if(t<minThreshold) return nullptr;
             else{
-                Point l = (AddPointVector(raySource, MultiplyVectorDouble(t, rayDirection)));
+                Point l = (addPointVector(raySource, multiplyVectorDouble(t, rayDirection)));
                 Vector n = getNormal(l);
                 return (new IntersectionPoint(l, n, t));
             }
@@ -320,7 +341,7 @@ class Polygon : public Object{
     }
 
     public:
-        Polygon(int t, vector<Point> & v, vector<double> a, vector<double> d, vector<double> s, double r, double p): Object(a, d, s, r, p){
+        Polygon(int t, vector<Point> & v, vector<double> a, vector<double> d, vector<double> s, double r, double p, double c1, double c2) : Object(a, d, s, r, p, c1, c2){
             n=t;
             for(int i=0;i<n;i++){
                coordinates.push_back(v[i]); 
@@ -328,7 +349,7 @@ class Polygon : public Object{
         }
         
         // get the intersection of ray with the polygon
-        IntersectionPoint* getIntersection(Ray& r1){
+        IntersectionPoint* getIntersection(Ray& r1, double minThreshold){
              Point r0 = r1.getSource();
              Point p0 = coordinates[0];
              Vector rd = r1.getDirection();
@@ -341,7 +362,8 @@ class Polygon : public Object{
                   return nullptr;
              }
              double t = -(dotProduct(normal,v))/(dotProduct(normal,rd));
-             Point intersection = AddPointVector(r0, MultiplyVectorDouble(t,rd));
+			 if (t < minThreshold) return nullptr;
+			 Point intersection = addPointVector(r0, multiplyVectorDouble(t,rd));
              bool c = isContained(intersection);
              if(c)
                 return (new IntersectionPoint(intersection, getNormal(), t));   

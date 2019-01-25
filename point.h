@@ -36,7 +36,33 @@ class IntersectionPoint{
         }
 };
 
-Vector MultiplyVectorDouble(const double a, const Vector& v){
+Vector getUnitVector(Vector& v){
+    double norm = sqrt((v.i)*(v.i) + (v.j)*(v.j) + (v.k)*(v.k));
+    Vector unitVector = v;
+    unitVector.i /= norm;
+    unitVector.j /= norm;
+    unitVector.k /= norm;
+    return unitVector;
+}
+
+vector<double> multiplyVectorsPointwise(vector<double>&v1, vector<double>&v2){
+    // Both vectors should be of same size
+    vector<double> result;
+    for(int i=0;i<v1.size();i++){
+        result.push_back(v1[i]*v2[i]);
+    }
+    return result;
+}
+
+vector<double> multiplyVectorDouble(const double a, const vector<double>& v){
+    vector<double> result;
+    for(int i=0;i<v.size();i++){
+        result.push_back(v[i]*a);
+    }
+    return result;
+}
+
+Vector multiplyVectorDouble(const double a, const Vector& v){
     Vector result = v;
     result.i *= a;
     result.j *= a;
@@ -44,7 +70,7 @@ Vector MultiplyVectorDouble(const double a, const Vector& v){
     return result;
 }
 
-Point AddPointVector(const Point& p, const Vector& v){
+Point addPointVector(const Point& p, const Vector& v){
     Point pt = p;
     pt.x += v.i;
     pt.y += v.j;
