@@ -11,10 +11,14 @@ class Scene{
         vector<LightSource> lightSources;
         Viewer eye;
         vector<double> ambientLight;
-    public:
-        Scene(vector<Object>& o, vector<LightSource>& l, vector<double> a, Viewer& v) : objects(o), lightSources(l), ambientLight(a), eye(v){
-
+        Vector getTransmissionVector(Vector i, Vector n, double rIndex1, double rIndex2){
+            double c = dotProduct(i,n);
+            double r = rIndex1/rIndex2;
+            Vector direction = multiplyVectorDouble(r, i) + multiplyVectorDouble(sqrt(1 - r*r*(1 - c*c)) + r*c, n);
+            return getUnitVector(direction);
         }
+    public:
+        Scene(vector<Object>& o, vector<LightSource>& l, vector<double> a, Viewer& v) : objects(o), lightSources(l), ambientLight(a), eye(v){}
         vector<Object> getObjectList(){
             return objects;
         }
@@ -24,10 +28,20 @@ class Scene{
         vector<double> getAmbientLight(){
             return ambientLight;
         }
-        vector<double> getIlumination(Ray& r, int objID){
+        vector<double> getIllumination(Ray& r, int objID, int depth, bool toEnter){
             // objID is the index of the object from which the ray is emerged
+            // if depth becomes zero, reflection and transmission is not considered
+            // toEnter differentiates whether it is an entering or exiting ray
             // first check whether this ray intersects with any of the object or not
             // if no intersection than, [0,0,0] is trivially returned;
+            if(toEnter==false){
+                // just do the transmission stuff and return
+                IntersectionPoint* p = objects[objID].getIntersection(r, 0.001);
+                Vector transmissionDirection = getTransmissionVector(r.getDirection(), p->getNormal(), objects[objID].getRefractiveIndex(),1);
+                Ray transmissionRay(p->getLocation(), transmissionDirection);
+                vector<double> illumination = getIllumination(transmissionRay, objID, depth, true);
+                return illumination;
+            }
             IntersectionPoint* minIntersectionPoint = nullptr;
             double minIntersectionParameter = DBL_MAX;
             int objectIndex = -1; // Will correspond to the first intersected object
@@ -66,7 +80,7 @@ class Scene{
 						}
 					}
                     if(shadowParameter!=1){
-                        Vector unitLightDirection = getUnitVector(direction);
+                        Vector unitLightDirection = getUnitVector(direction); //shadowRay.getDirection()
                         double cosineLightNormal = dotProduct(unitLightDirection,minIntersectionPoint->getNormal());
                         vector<double> diffusionIllumination = multiplyVectorDouble(cosineLightNormal,
                             multiplyVectorsPointwise(objects[objectIndex].getDiffusionCoefficeint(), lightSources[i].getIntensity()));
@@ -91,6 +105,40 @@ class Scene{
                 // now phong illumination is done at this point
                 // reflection and refraction has to be handled now
                 
+                if(depth !=0){
+                    //Reflection
+                    double cosineIncidentNormal = dotProduct(r.getDirection(), minIntersectionPoint->getNormal());
+                    Vector reflectionDirection = r.getDirection() + multiplyVectorDouble(-2*cosineIncidentNormal, minIntersectionPoint->getNormal());
+                    
+                    Ray reflectionRay(minIntersectionPoint->getLocation(), reflectionDirection);
+
+                    vector<double> reflectionIllumination = getIllumination(reflectionRay, objectIndex, depth-1, toEnter);
+                    // update total illumination
+                    for(int i=0;i<3;i++){
+                        illumination[i] += objects[objectIndex].getReflectionConstant()*reflectionIllumination[i];
+                    }
+
+                    //Refraction
+                    if(objects[objectIndex].isPlanar()){
+                        // if object is planar, than no refraction is considered (case of polygon), simple transmission
+                        Ray transmissionRay(minIntersectionPoint->getLocation(), r.getDirection());
+                        vector<double> transmissionIllumination = getIllumination(transmissionRay, objectIndex, depth-1, toEnter);
+                        // update total illumination
+                        for(int i=0;i<3;i++){
+                            illumination[i] += objects[objectIndex].getRefractionConstant()*transmissionIllumination[i];
+                        }
+                    }
+                    else{
+                        Vector transmissionDirection = getTransmissionVector(r.getDirection(), minIntersectionPoint->getNormal(), 1, objects[objectIndex].getRefractiveIndex());
+                        Ray transmissionRay(minIntersectionPoint->getLocation(), transmissionDirection);
+                        vector<double> transmissionIllumination = getIllumination(transmissionRay, objectIndex, depth-1, false);
+                        // update total illumination
+                        for(int i=0;i<3;i++){
+                            illumination[i] += objects[objectIndex].getRefractionConstant()*transmissionIllumination[i];
+                        }
+                    }
+                }
+                return illumination;
             }
         }
 };
