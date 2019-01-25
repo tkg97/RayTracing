@@ -13,8 +13,10 @@ class Object{
     double phongExponent;
 	double reflectionConstant;
 	double refractionConstant;
+    bool planarity;
     public:
-        Object(vector<double> a, vector<double> d, vector<double> s, double r, double p, double c1, double c2) : ambientCoefficient(a), diffuseCoefficient(d), specularCoefficient(s), refractiveIndex(r), phongExponent(p), reflectionConstant(c1), refractionConstant(c2){}
+        Object(vector<double> a, vector<double> d, vector<double> s, double r, double p, double c1, double c2, bool planar = false) : ambientCoefficient(a), diffuseCoefficient(d), specularCoefficient(s),
+                     refractiveIndex(r), phongExponent(p), reflectionConstant(c1), refractionConstant(c2), planarity(planar){}
         vector<double> getAmbientCoefficient(){
             return ambientCoefficient;
         }
@@ -35,6 +37,9 @@ class Object{
         }
         double getRefractionConstant(){
             return refractionConstant;
+        }
+        bool isPlanar(){
+            return planarity;
         }
         virtual IntersectionPoint* getIntersection(Ray& r, double minThreshold) = 0;
         // minThreshold will help me handle the case for t==0
@@ -195,7 +200,7 @@ class quadric : public Object{
 
     public:
         quadric(double d1, double d2, double d3, double d4, double d5, double d6, double d7, double d8, double d9, double d10,
-			vector<double> a, vector<double> d, vector<double> s, double r, double p, double c1, double c2) : Object(a, d, s, r, p, c1, c2){
+			vector<double> a, vector<double> d, vector<double> s, double r, double p, double c1, double c2, bool planar = false) : Object(a, d, s, r, p, c1, c2, planar){
             this->a = d1;
             this->b = d2;
             this->c = d3;
@@ -341,7 +346,7 @@ class Polygon : public Object{
     }
 
     public:
-        Polygon(int t, vector<Point> & v, vector<double> a, vector<double> d, vector<double> s, double r, double p, double c1, double c2) : Object(a, d, s, r, p, c1, c2){
+        Polygon(int t, vector<Point> & v, vector<double> a, vector<double> d, vector<double> s, double r, double p, double c1, double c2) : Object(a, d, s, r, p, c1, c2, true){
             n=t;
             for(int i=0;i<n;i++){
                coordinates.push_back(v[i]); 
