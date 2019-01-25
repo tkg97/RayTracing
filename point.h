@@ -9,6 +9,12 @@ class Vector{
         double j;
         double k;
         Vector(double a, double b, double c):i(a), j(b), k(c){}
+        Vector operator +(const Vector&v){
+            Vector result = v;
+            result.i += this->i;
+            result.j += this->j;
+            result.k += this->k;
+        }
 };
 
 class Point{
@@ -110,7 +116,7 @@ class Ray{
     Point source;
     Vector direction;
     public:
-        Ray(Point& p, Vector& v):source(p), direction(v){}
+        Ray(Point& p, Vector& v) : source(p), direction(getUnitVector(v)){}
         Point getSource(){
             return source;
         }
