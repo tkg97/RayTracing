@@ -99,7 +99,6 @@ int main(){
     Point origin = multiplyMatrix(cameraToWorld, o);
     int w = 1024, h = 768;
     double angle = 45;
-    Point eyeLocation = 
     Viewer v(origin,w,h,angle);
     vector<Object> spheres;
     Point centre1(0.0, 0, -20);
