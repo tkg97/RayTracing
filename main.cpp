@@ -1,6 +1,6 @@
-#pragma once 
-
 #include<vector>
+#include <fstream>
+#include <sstream>
 #include "scene.h"
 #include "point.h"
 #include "camera.h"
