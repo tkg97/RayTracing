@@ -69,9 +69,9 @@ void savebmp(const char *filename, int w, int h, int dpi, RGBType *data) {
 	for (int i = 0; i < k; i++) {
 		RGBType rgb = data[i];
 
-		double red = (256 - data[i].r) * 255;
-		double green = (256 - data[i].g) * 255;
-		double blue = (256 - data[i].b) * 255;
+		double red = data[i].r * 255;
+		double green = (data[i].g) * 255;
+		double blue = (data[i].b) * 255;
 
 		unsigned char color[3] = { (unsigned char)floor(blue),(unsigned char)floor(green),(unsigned char)floor(red) };
 
@@ -96,23 +96,24 @@ int main(){
     vector<vector<double>> cameraToWorld = {{1,0,0,0},{0,1,0,0},{0,0,1,0},{0,0,0,0}}; 
     Point o(0,0,0);
     Point origin = multiplyMatrix(cameraToWorld, o);
-    int w = 10; 
-	int h = 8;
+    int w = 1024; 
+	int h = 768;
     double angle = 45; // in degrees
     Viewer v(origin,angle, w,h);
     vector<Object*> spheres;
-    Point centre1(0.0, 0, -7);
-    double rad1 = 10;
+    Point centre1(0.0, 0, -20);
+    double rad1 = 4;
     Sphere s1(rad1 ,centre1, {0.2, 0.2, 0.2},{0.8, 0.8, 0.8},{0.1,0.1,0.1}, 5, 20 , 0.5, 0.1);
-    Point centre2(0.0, 5, -7);
-    double rad2 = 10;
+    Point centre2(0.0, 10, -20);
+    double rad2 = 4;
     Sphere s2(rad2 ,centre2, {0.2, 0.2, 0.2},{0.8, 0.8, 0.8},{0.1,0.1,0.1}, 5, 20 , 0.5, 0.1);
     spheres.push_back(&s1);
     spheres.push_back(&s2);
     vector<LightSource> lightSources;
     Point Location1(0,20,-7);
     LightSource l1(Location1,{1,1,1});
-    Scene s(spheres, lightSources, {0.1,0.1,0.1}, v );
+	lightSources.push_back(l1);
+    Scene s(spheres, lightSources, {1,1,1}, v );
     
 
     //creating the window
@@ -131,12 +132,19 @@ int main(){
             Vector dir = getSubtractionVector(origin,b); 
             Ray r(origin , dir);
             vector<double> rgb= s.getIllumination(r, -1, 0, true);
-			// cout << rgb[0] << " " << rgb[1] << " " << rgb[2] << endl;
             pixels[j*w + i].r = rgb[0];
 			pixels[j*w + i].g = rgb[1];
 			pixels[j*w + i].b = rgb[2];
         } 
-    } 
+    }
+	// for (int i = 0; i < w; ++i) { 
+    //     for (int j = 0; j < h; ++j) {
+	// 		cout << "[" << pixels[j*w + i].r << " " << pixels[j*w + i].g << " " << pixels[j*w + i].b << "]" << " ";
+	// 	}
+	// 	cout << endl;
+	// }
+	cout << noIntersect << endl;
+	cout << shadow << endl;
     savebmp("rayTrace.bmp", w, h, 72, pixels);
 
     return 0;

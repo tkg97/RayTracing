@@ -6,6 +6,9 @@
 #include "camera.h"
 using namespace std;
 
+int noIntersect = 0;
+int shadow  = 0;
+
 class Scene{
         vector<Object*> objects;
         vector<LightSource> lightSources;
@@ -52,7 +55,6 @@ class Scene{
                     p = objects[i]->getIntersection(r, 0.001); // t=0 intersection is not required
                 }
                 else p = objects[i]->getIntersection(r, 0);
-                if(p!=nullptr) cout << "intersect hui" << endl;
                 if(p!=nullptr && p->getRayParameter() < minIntersectionParameter){
                     minIntersectionParameter = p->getRayParameter();
                     minIntersectionPoint = p;
@@ -60,6 +62,7 @@ class Scene{
                 }
             }
             if(minIntersectionPoint==nullptr){
+                noIntersect++;
                 return vector<double>(3,0);
             }
             else{
@@ -67,7 +70,7 @@ class Scene{
                 // Let us first check for shadows
                 vector<double> illumination(3,0);
                 for(int i=0;i<lightSources.size();i++){
-                    double shadowParameter = 0; // 0 means no shadow, 1 means complete shadow
+                    int shadowParameter = 0; // 0 means no shadow, 1 means complete shadow
                     Vector direction = getSubtractionVector(minIntersectionPoint->getLocation(), lightSources[i].getLocation());
                     Ray shadowRay(minIntersectionPoint->getLocation(), direction);
 					for (int j = 0; j< objects.size();j++) {
@@ -82,6 +85,7 @@ class Scene{
 						}
 					}
                     if(shadowParameter!=1){
+                        shadow++;
                         Vector unitLightDirection = getUnitVector(direction); //shadowRay.getDirection()
                         double cosineLightNormal = dotProduct(unitLightDirection,minIntersectionPoint->getNormal());
                         vector<double> diffusionIllumination = multiplyVectorDouble(cosineLightNormal,
@@ -140,6 +144,7 @@ class Scene{
                         }
                     }
                 }
+                // cout << illumination[0] << " " << illumination[1] << " " << illumination[2] << endl;
                 return illumination;
             }
         }
