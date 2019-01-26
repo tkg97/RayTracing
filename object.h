@@ -52,9 +52,17 @@ class Sphere : public Object{
     double radius;
     Point center;
 
-    double getFunctionValue(double x1, double y1, double z1, double x2, double y2, double z2){
-        return (x1*x2 + y1*y2 + z1*z2 - (center.x)*(x1+x2) - (center.y)*(y1+y2) - (center.z)*(z1+z2) + 
-        ((center.x)*(center.x) + (center.y)*(center.y) + (center.z)*(center.z) - radius*radius));
+    double getValueA(double x1, double y1, double z1, double x2, double y2, double z2){
+        return (x2*x2 + y2*y2 + z2*z2);
+    }
+
+    double getValueB(double x1, double y1, double z1, double x2, double y2, double z2){
+        return 2*(x1*x2 + y1*y2 + z1*z2 - (center.x)*(x2) - (center.y)*(y2) - (center.z)*(z2));
+    }
+
+    double getValueC(double x1, double y1, double z1, double x2, double y2, double z2){
+        return (x1*x1 + y1*y1 + z1*z1 - (center.x)*(x1+x1) + - (center.y)*(y1+y1) - (center.z)*(z1+z1) + 
+                ((center.x)*(center.x) + (center.y)*(center.y) + (center.z)*(center.z) - radius*radius));
     }
 
     Vector getNormal(Point p){
@@ -69,9 +77,9 @@ class Sphere : public Object{
             // cout << "i am called" << endl;
             Point raySource = r.getSource();
             Vector rayDirection = r.getDirection();
-            double a = getFunctionValue(rayDirection.i, rayDirection.j, rayDirection.k, rayDirection.i, rayDirection.j, rayDirection.k);
-            double b = 2*getFunctionValue(rayDirection.i, rayDirection.j, rayDirection.k, raySource.x, raySource.y, raySource.z);
-            double c = getFunctionValue(raySource.x, raySource.y, raySource.z, raySource.x, raySource.y, raySource.z);
+            double a = getValueA(raySource.x, raySource.y, raySource.z, rayDirection.i, rayDirection.j, rayDirection.k);
+            double b = getValueB(raySource.x, raySource.y, raySource.z, rayDirection.i, rayDirection.j, rayDirection.k);
+            double c = getValueC(raySource.x, raySource.y, raySource.z, rayDirection.i, rayDirection.j, rayDirection.k);
             double t;
             if(abs(a)<=0.00001){
                 t = -c/b;
@@ -189,9 +197,18 @@ class Box : public Object{
 class quadric : public Object{
     //  ax^2 + by^2 + cz^2 + 2fyz + 2gzx + 2hxy + 2px + 2qy + 2rz + d = 0.
     double a, b, c, f, g, h, p, q, r, d;
-    double getFunctionValue(double x1, double y1, double z1, double x2, double y2, double z2){
-        return (a*x1*x2 + b*y1*y2 + c*z1*z2 + f*(y1*z2 + y2*z1) + g*(z1*x2 + z2*x1) + h*(x1*y2 + x2*y1) + 
-                p*(x1+x2) + q*(y1+y2) + r*(z1+z2) + d);
+
+    double getValueA(double x1, double y1, double z1, double x2, double y2, double z2){
+        return (a*x2*x2 + b*y2*y2 + c*z2*z2 + f*(y2*z2 + y2*z2) + g*(z2*x2 + z2*x2) + h*(x2*y2 + x2*y2));
+    }
+
+    double getValueB(double x1, double y1, double z1, double x2, double y2, double z2){
+        return 2*(a*x1*x2 + b*y1*y2 + c*z1*z2 + f*(y1*z2 + y2*z1) + g*(z1*x2 + z2*x1) + h*(x1*y2 + x2*y1) + p*(x2) + q*(y2) + r*(z2));
+    }
+
+    double getValueC(double x1, double y1, double z1, double x2, double y2, double z2){
+        return (a*x1*x1 + b*y1*y1 + c*z1*z1 + f*(y1*z1 + y1*z1) + g*(z1*x1 + z1*x1) + h*(x1*y1 + x1*y1) + 
+                p*(x1+x1) + q*(y1+y1) + r*(z1+z1) + d);
     }
 
     Vector getNormal(Point pt){
@@ -211,9 +228,9 @@ class quadric : public Object{
         IntersectionPoint* getIntersection(Ray r, double minThreshold){
             Point raySource = r.getSource();
             Vector rayDirection = r.getDirection();
-            double a = getFunctionValue(rayDirection.i, rayDirection.j, rayDirection.k, rayDirection.i, rayDirection.j, rayDirection.k);
-            double b = 2*getFunctionValue(rayDirection.i, rayDirection.j, rayDirection.k, raySource.x, raySource.y, raySource.z);
-            double c = getFunctionValue(raySource.x, raySource.y, raySource.z, raySource.x, raySource.y, raySource.z);
+            double a = getValueA(raySource.x, raySource.y, raySource.z, rayDirection.i, rayDirection.j, rayDirection.k);
+            double b = getValueB(raySource.x, raySource.y, raySource.z, rayDirection.i, rayDirection.j, rayDirection.k);
+            double c = getValueC(raySource.x, raySource.y, raySource.z, rayDirection.i, rayDirection.j, rayDirection.k);
             double t;
             if(abs(a)<=0.00001){
                 t = -c/b;
