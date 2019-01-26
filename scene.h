@@ -11,6 +11,7 @@ class Scene{
         vector<LightSource> lightSources;
         Viewer eye;
         vector<double> ambientLight;
+        
         Vector getTransmissionVector(Vector i, Vector n, double rIndex1, double rIndex2){
             double c = dotProduct(i,n);
             double r = rIndex1/rIndex2;

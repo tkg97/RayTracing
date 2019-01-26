@@ -8,9 +8,7 @@ class LightSource{
     Point location;
     vector<double> intensity;
     public:
-        LightSource(Point p, vector<double> d) : location(p), intensity(d){
-            
-        }
+        LightSource(Point p, vector<double> d) : location(p), intensity(d){}
         Point getLocation(){
             return location;
         }

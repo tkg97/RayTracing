@@ -6,6 +6,7 @@
 using namespace std;
 
 class Object{
+    // an abstract parent class for all the objects
     vector<double> ambientCoefficient;
     vector<double> diffuseCoefficient;
     vector<double> specularCoefficient;
@@ -55,12 +56,8 @@ class Sphere : public Object{
     }
 
     Vector getNormal(Point p){
-        double i = p.x - center.x;
-        double j = p.y - center.y;
-        double k = p.z - center.z;
-        double norm = sqrt(i*i + j*j + k*k);
-        Vector normal(i/norm, j/norm, k/norm);
-        return normal;
+        Vector normal = getSubtractionVector(center, p);
+        return getUnitVector(normal);
     }
 
     public:
@@ -129,7 +126,7 @@ class Box : public Object{
     }
 
     void storeReferencePoints(){
-        referencePoints.push_back(coordinates[0]);
+        referencePoints.push_back(coordinates[2]);
         referencePoints.push_back(coordinates[0]);
         referencePoints.push_back(coordinates[4]);
         referencePoints.push_back(coordinates[5]);
@@ -150,7 +147,11 @@ class Box : public Object{
             Vector nEnter(0, 0, 0); // Initialised to be a zero vector // normal
 			Vector nLeave(0, 0, 0); // Initialised to be a zero vector // normal
             for(int i=0;i<6;i++){
-                if(dotProduct(rayDirection, normals[i]) == 0) continue;
+                if(dotProduct(rayDirection, normals[i]) == 0){
+                // if ray is parallel to certain face and it is not contained in the face, then its probably useless
+                // And the case where it is contained is simply avoided
+                    continue;
+                }
                 if(dotProduct(rayDirection, normals[i]) <0){
                     //ray is entering
                     double t = -dotProduct(getSubtractionVector(referencePoints[i], raySource), normals[i])/(dotProduct(rayDirection, normals[i]));
@@ -160,6 +161,7 @@ class Box : public Object{
                     }
                 }
                 else{
+                    //ray is leaving
                     double t = -dotProduct(getSubtractionVector(referencePoints[i], raySource), normals[i])/(dotProduct(rayDirection, normals[i]));
 					if (t < tLeaveMin) {
 						tLeaveMin = t;
@@ -182,11 +184,11 @@ class Box : public Object{
 };
 
 class quadric : public Object{
-    //  ax^2 + by^2 + cz^2 + 2fyz + 2gzx + 2hxy + 2px + 2qy + 2rz + d =0.
+    //  ax^2 + by^2 + cz^2 + 2fyz + 2gzx + 2hxy + 2px + 2qy + 2rz + d = 0.
     double a, b, c, f, g, h, p, q, r, d;
     double getFunctionValue(double x1, double y1, double z1, double x2, double y2, double z2){
         return (a*x1*x2 + b*y1*y2 + c*z1*z2 + f*(y1*z2 + y2*z1) + g*(z1*x2 + z2*x1) + h*(x1*y2 + x2*y1) + 
-        p*(x1+x2) + q*(y1+y2) + r*(z1+z2) + d);
+                p*(x1+x2) + q*(y1+y2) + r*(z1+z2) + d);
     }
 
     Vector getNormal(Point& pt){
@@ -200,18 +202,8 @@ class quadric : public Object{
 
     public:
         quadric(double d1, double d2, double d3, double d4, double d5, double d6, double d7, double d8, double d9, double d10,
-			vector<double> a, vector<double> d, vector<double> s, double r, double p, double c1, double c2, bool planar = false) : Object(a, d, s, r, p, c1, c2, planar){
-            this->a = d1;
-            this->b = d2;
-            this->c = d3;
-            this->f = d4;
-            this->g = d5;
-            this->h = d6;
-            this->p = d7;
-            this->q = d8;
-            this->r = d9;
-            this->d = d10;
-        }
+			vector<double> amb, vector<double> d, vector<double> s, double r, double p, double c1, double c2, bool planar = false) : Object(amb, d, s, r, p, c1, c2, planar),
+            a(d1), b(d2), c(d3), f(d4), g(d5), h(d6), p(d7), q(d8), r(d9), d(d10){}
 
         IntersectionPoint* getIntersection(Ray& r, double minThreshold){
             Point raySource = r.getSource();
@@ -250,7 +242,7 @@ class quadric : public Object{
 };
 
 class Polygon : public Object{
-    int n;
+    int n; //vertexCount
     vector< Point > coordinates;
     //returns true if q lies on line segment p-r
     bool onSegment(Point p, Point q, Point r) 
