@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <iostream>
 #include <algorithm>
 #include <float.h>
 #include "point.h"
@@ -43,7 +44,7 @@ class Object{
         bool isPlanar(){
             return planarity;
         }
-        virtual IntersectionPoint* getIntersection(Ray r, double minThreshold){}
+        virtual IntersectionPoint* getIntersection(Ray r, double minThreshold) = 0;
         // minThreshold will help me handle the case for t==0
 };
 
@@ -65,6 +66,7 @@ class Sphere : public Object{
         Sphere(double rad, Point pt, vector<double> a, vector<double> d, vector<double> s, double r, double p, double c1, double c2): Object(a, d, s, r, p, c1, c2), radius(rad), center(pt){}
 
         IntersectionPoint* getIntersection(Ray r, double minThreshold){
+            // cout << "i am called" << endl;
             Point raySource = r.getSource();
             Vector rayDirection = r.getDirection();
             double a = getFunctionValue(rayDirection.i, rayDirection.j, rayDirection.k, rayDirection.i, rayDirection.j, rayDirection.k);

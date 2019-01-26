@@ -99,15 +99,15 @@ int main(){
     int w = 1024, h = 768;
     double angle = 45; // in degrees
     Viewer v(origin,angle, w,h);
-    vector<Object> spheres;
+    vector<Object*> spheres;
     Point centre1(0.0, 0, -20);
     double rad1 = 4;
     Sphere s1(rad1 ,centre1, {0.2, 0.2, 0.2},{0.8, 0.8, 0.8},{0.1,0.1,0.1}, 5, 20 , 0.1, 0.1);
     Point centre2(0.0, 10, -20);
     double rad2 = 4;
     Sphere s2(rad2 ,centre2, {0.2, 0.2, 0.2},{0.8, 0.8, 0.8},{0.1,0.1,0.1}, 5, 20 , 0.1, 0.1);
-    spheres.push_back(s1);
-    spheres.push_back(s2);
+    spheres.push_back(&s1);
+    spheres.push_back(&s2);
     vector<LightSource> lightSources;
     Point Location1({0,20,-20});
     LightSource l1(Location1,{1,1,1});
@@ -129,7 +129,8 @@ int main(){
             Point b = multiplyMatrix(cameraToWorld ,a );
             Vector dir = getSubtractionVector(origin,b); 
             Ray r(origin , dir);
-            vector<double> rgb= s.getIllumination(r, -1, 3, true);
+            vector<double> rgb= s.getIllumination(r, -1, 0, true);
+			// cout << rgb[0] << " " << rgb[1] << " " << rgb[2] << endl;
             pixels[i*w + j].r = rgb[0];
 			pixels[i*w + j].g = rgb[1];
 			pixels[i*w + j].b = rgb[2];
