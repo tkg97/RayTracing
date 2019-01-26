@@ -73,7 +73,7 @@ class Sphere : public Object{
             double b = 2*getFunctionValue(rayDirection.i, rayDirection.j, rayDirection.k, raySource.x, raySource.y, raySource.z);
             double c = getFunctionValue(raySource.x, raySource.y, raySource.z, raySource.x, raySource.y, raySource.z);
             double t;
-            if(a==0){
+            if(abs(a)<=0.00001){
                 t = -c/b;
             }
             else{
@@ -215,7 +215,7 @@ class quadric : public Object{
             double b = 2*getFunctionValue(rayDirection.i, rayDirection.j, rayDirection.k, raySource.x, raySource.y, raySource.z);
             double c = getFunctionValue(raySource.x, raySource.y, raySource.z, raySource.x, raySource.y, raySource.z);
             double t;
-            if(a==0){
+            if(abs(a)<=0.00001){
                 t = -c/b;
             }
             else{
