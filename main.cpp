@@ -126,7 +126,7 @@ int main(){
     for (int i = 0; i < w; ++i) { 
         for (int j = 0; j < h; ++j) { 
             float x = (2 * ((i + 0.5) / (w*1.0)) - 1) * imageAspectRatio * scale; 
-            float y = (1 - 2 * ((j + 0.5) / (h*1.0))) * scale; 
+            float y = (2 * ((j + 0.5) / (h*1.0)) - 1) * scale; 
             Point a(x,y,-1);
             Point b = multiplyMatrix(cameraToWorld ,a );
             Vector dir = getSubtractionVector(origin,b); 
