@@ -96,20 +96,21 @@ int main(){
     vector<vector<double>> cameraToWorld = {{1,0,0,0},{0,1,0,0},{0,0,1,0},{0,0,0,0}}; 
     Point o(0,0,0);
     Point origin = multiplyMatrix(cameraToWorld, o);
-    int w = 1024, h = 768;
+    int w = 10; 
+	int h = 8;
     double angle = 45; // in degrees
     Viewer v(origin,angle, w,h);
     vector<Object*> spheres;
-    Point centre1(0.0, 0, -20);
-    double rad1 = 4;
-    Sphere s1(rad1 ,centre1, {0.2, 0.2, 0.2},{0.8, 0.8, 0.8},{0.1,0.1,0.1}, 5, 20 , 0.1, 0.1);
-    Point centre2(0.0, 10, -20);
-    double rad2 = 4;
-    Sphere s2(rad2 ,centre2, {0.2, 0.2, 0.2},{0.8, 0.8, 0.8},{0.1,0.1,0.1}, 5, 20 , 0.1, 0.1);
+    Point centre1(0.0, 0, -7);
+    double rad1 = 10;
+    Sphere s1(rad1 ,centre1, {0.2, 0.2, 0.2},{0.8, 0.8, 0.8},{0.1,0.1,0.1}, 5, 20 , 0.5, 0.1);
+    Point centre2(0.0, 5, -7);
+    double rad2 = 10;
+    Sphere s2(rad2 ,centre2, {0.2, 0.2, 0.2},{0.8, 0.8, 0.8},{0.1,0.1,0.1}, 5, 20 , 0.5, 0.1);
     spheres.push_back(&s1);
     spheres.push_back(&s2);
     vector<LightSource> lightSources;
-    Point Location1({0,20,-20});
+    Point Location1(0,20,-7);
     LightSource l1(Location1,{1,1,1});
     Scene s(spheres, lightSources, {0.1,0.1,0.1}, v );
     
@@ -121,8 +122,8 @@ int main(){
     // rendering the scene
     double scale = tan((angle * M_PI)/180); 
     double imageAspectRatio = (w*1.0)/h; 
-    for (int j = 0; j < h; ++j) { 
-        for (int i = 0; i < w; ++i) { 
+    for (int i = 0; i < w; ++i) { 
+        for (int j = 0; j < h; ++j) { 
             float x = (2 * ((i + 0.5) / (w*1.0)) - 1) * imageAspectRatio * scale; 
             float y = (1 - 2 * ((j + 0.5) / (h*1.0))) * scale; 
             Point a(x,y,-1);
@@ -130,10 +131,10 @@ int main(){
             Vector dir = getSubtractionVector(origin,b); 
             Ray r(origin , dir);
             vector<double> rgb= s.getIllumination(r, -1, 0, true);
-			// cout << rgb[0] << " " << rgb[1] << " " << rgb[2] << endl;
-            pixels[i*w + j].r = rgb[0];
-			pixels[i*w + j].g = rgb[1];
-			pixels[i*w + j].b = rgb[2];
+			cout << rgb[0] << " " << rgb[1] << " " << rgb[2] << endl;
+            pixels[j*w + i].r = rgb[0];
+			pixels[j*w + i].g = rgb[1];
+			pixels[j*w + i].b = rgb[2];
         } 
     } 
     savebmp("rayTrace.bmp", w, h, 72, pixels);
