@@ -131,7 +131,7 @@ int main(){
             Vector dir = getSubtractionVector(origin,b); 
             Ray r(origin , dir);
             vector<double> rgb= s.getIllumination(r, -1, 0, true);
-			cout << rgb[0] << " " << rgb[1] << " " << rgb[2] << endl;
+			// cout << rgb[0] << " " << rgb[1] << " " << rgb[2] << endl;
             pixels[j*w + i].r = rgb[0];
 			pixels[j*w + i].g = rgb[1];
 			pixels[j*w + i].b = rgb[2];
