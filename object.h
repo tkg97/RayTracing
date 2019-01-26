@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <algorithm>
+#include <float.h>
 #include "point.h"
 using namespace std;
 
@@ -42,7 +43,7 @@ class Object{
         bool isPlanar(){
             return planarity;
         }
-        virtual IntersectionPoint* getIntersection(Ray& r, double minThreshold) = 0;
+        virtual IntersectionPoint* getIntersection(Ray r, double minThreshold){}
         // minThreshold will help me handle the case for t==0
 };
 
@@ -61,9 +62,9 @@ class Sphere : public Object{
     }
 
     public:
-        Sphere(double rad, Point& pt, vector<double> a, vector<double> d, vector<double> s, double r, double p, double c1, double c2): Object(a, d, s, r, p, c1, c2), radius(rad), center(pt){}
+        Sphere(double rad, Point pt, vector<double> a, vector<double> d, vector<double> s, double r, double p, double c1, double c2): Object(a, d, s, r, p, c1, c2), radius(rad), center(pt){}
 
-        IntersectionPoint* getIntersection(Ray& r, double minThreshold){
+        IntersectionPoint* getIntersection(Ray r, double minThreshold){
             Point raySource = r.getSource();
             Vector rayDirection = r.getDirection();
             double a = getFunctionValue(rayDirection.i, rayDirection.j, rayDirection.k, rayDirection.i, rayDirection.j, rayDirection.k);
@@ -135,12 +136,12 @@ class Box : public Object{
     }
     
     public:
-        Box(vector<Point>& v, vector<double> a, vector<double> d, vector<double> s, double r, double p, double c1, double c2) : Object(a, d, s, r, p, c1, c2), coordinates(v){
+        Box(vector<Point> v, vector<double> a, vector<double> d, vector<double> s, double r, double p, double c1, double c2) : Object(a, d, s, r, p, c1, c2), coordinates(v){
             calculateAllNormals();
             storeReferencePoints();
         }
 
-        IntersectionPoint* getIntersection(Ray& r, double minThreshold){
+        IntersectionPoint* getIntersection(Ray r, double minThreshold){
             Point raySource = r.getSource();
             Vector rayDirection = r.getDirection(); 
             double tEnterMax = DBL_MIN, tLeaveMin = DBL_MAX;
@@ -191,7 +192,7 @@ class quadric : public Object{
                 p*(x1+x2) + q*(y1+y2) + r*(z1+z2) + d);
     }
 
-    Vector getNormal(Point& pt){
+    Vector getNormal(Point pt){
         double i = a*(pt.x) + g*(pt.z) + h*(pt.y) + p; // factor of 2 is removed as normalization will be done
         double j = b*(pt.y) + f*(pt.z) + h*(pt.x) + q;
         double k = c*(pt.z) + f*(pt.y) + g*(pt.x) + r;
@@ -205,7 +206,7 @@ class quadric : public Object{
 			vector<double> amb, vector<double> d, vector<double> s, double r, double p, double c1, double c2, bool planar = false) : Object(amb, d, s, r, p, c1, c2, planar),
             a(d1), b(d2), c(d3), f(d4), g(d5), h(d6), p(d7), q(d8), r(d9), d(d10){}
 
-        IntersectionPoint* getIntersection(Ray& r, double minThreshold){
+        IntersectionPoint* getIntersection(Ray r, double minThreshold){
             Point raySource = r.getSource();
             Vector rayDirection = r.getDirection();
             double a = getFunctionValue(rayDirection.i, rayDirection.j, rayDirection.k, rayDirection.i, rayDirection.j, rayDirection.k);
@@ -338,7 +339,7 @@ class Polygon : public Object{
     }
 
     public:
-        Polygon(int t, vector<Point> & v, vector<double> a, vector<double> d, vector<double> s, double r, double p, double c1, double c2) : Object(a, d, s, r, p, c1, c2, true){
+        Polygon(int t, vector<Point> v, vector<double> a, vector<double> d, vector<double> s, double r, double p, double c1, double c2) : Object(a, d, s, r, p, c1, c2, true){
             n=t;
             for(int i=0;i<n;i++){
                coordinates.push_back(v[i]); 
@@ -346,7 +347,7 @@ class Polygon : public Object{
         }
         
         // get the intersection of ray with the polygon
-        IntersectionPoint* getIntersection(Ray& r1, double minThreshold){
+        IntersectionPoint* getIntersection(Ray r1, double minThreshold){
              Point r0 = r1.getSource();
              Point p0 = coordinates[0];
              Vector rd = r1.getDirection();

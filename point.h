@@ -30,7 +30,7 @@ class IntersectionPoint{
     Vector normal; // normal at the location of intersection
     double rayParameter; //p0 + tp1 // tha value of t
     public:
-        IntersectionPoint(Point&p, Vector& n, double r) : location(p), normal(n), rayParameter(r){}
+        IntersectionPoint(Point p, Vector n, double r) : location(p), normal(n), rayParameter(r){}
         Point getLocation(){
             return location;
         }
@@ -42,16 +42,15 @@ class IntersectionPoint{
         }
 };
 
-Vector getUnitVector(Vector& v){
+Vector getUnitVector(Vector v){
     double norm = sqrt((v.i)*(v.i) + (v.j)*(v.j) + (v.k)*(v.k));
-    Vector unitVector = v;
-    unitVector.i /= norm;
-    unitVector.j /= norm;
-    unitVector.k /= norm;
-    return unitVector;
+    v.i /= norm;
+    v.j /= norm;
+    v.k /= norm;
+    return v;
 }
 
-vector<double> multiplyVectorsPointwise(vector<double>&v1, vector<double>&v2){
+vector<double> multiplyVectorsPointwise(vector<double>v1, vector<double>v2){
     // Both vectors should be of same size
     vector<double> result;
     for(int i=0;i<v1.size();i++){
@@ -60,7 +59,7 @@ vector<double> multiplyVectorsPointwise(vector<double>&v1, vector<double>&v2){
     return result;
 }
 
-vector<double> multiplyVectorDouble(const double a, const vector<double>& v){
+vector<double> multiplyVectorDouble(double a, vector<double> v){
     vector<double> result;
     for(int i=0;i<v.size();i++){
         result.push_back(v[i]*a);
@@ -68,7 +67,7 @@ vector<double> multiplyVectorDouble(const double a, const vector<double>& v){
     return result;
 }
 
-Vector multiplyVectorDouble(const double a, const Vector& v){
+Vector multiplyVectorDouble(double a, Vector v){
     Vector result = v;
     result.i *= a;
     result.j *= a;
@@ -76,12 +75,11 @@ Vector multiplyVectorDouble(const double a, const Vector& v){
     return result;
 }
 
-Point addPointVector(const Point& p, const Vector& v){
-    Point pt = p;
-    pt.x += v.i;
-    pt.y += v.j;
-    pt.z += v.k;
-    return pt;
+Point addPointVector(Point p, Vector v){
+    p.x += v.i;
+    p.y += v.j;
+    p.z += v.k;
+    return p;
 }
 
 Vector crossProduct(Point p1, Point p2, Point p3){
@@ -116,7 +114,7 @@ class Ray{
     Point source;
     Vector direction;
     public:
-        Ray(Point& p, Vector& v) : source(p), direction(getUnitVector(v)){}
+        Ray(Point p, Vector v) : source(p), direction(getUnitVector(v)){}
         Point getSource(){
             return source;
         }

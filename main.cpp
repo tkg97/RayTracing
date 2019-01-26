@@ -1,4 +1,5 @@
 #include<vector>
+#include <iostream>
 #include <fstream>
 #include <sstream>
 #include "scene.h"
@@ -6,7 +7,6 @@
 #include "camera.h"
 #include "object.h"
 #include "light.h"
-#define  M_PI 3.14
 using namespace std;
 
 struct RGBType {
@@ -73,7 +73,7 @@ void savebmp(const char *filename, int w, int h, int dpi, RGBType *data) {
 		double green = (256 - data[i].g) * 255;
 		double blue = (256 - data[i].b) * 255;
 
-		unsigned char color[3] = { (int)floor(blue),(int)floor(green),(int)floor(red) };
+		unsigned char color[3] = { (unsigned char)floor(blue),(unsigned char)floor(green),(unsigned char)floor(red) };
 
 		fwrite(color, 1, 3, f);
 	}
@@ -92,14 +92,13 @@ Point multiplyMatrix(vector<vector<double>> cameraToWorld,Point p){
     return r;
 }
 int main(){
-
     //creating scene
-     vector<vector<double>> cameraToWorld = {{1,0,0,0},{0,1,0,0},{0,0,1,0},{0,0,0,0}}; 
-     Point o(0,0,0);
+    vector<vector<double>> cameraToWorld = {{1,0,0,0},{0,1,0,0},{0,0,1,0},{0,0,0,0}}; 
+    Point o(0,0,0);
     Point origin = multiplyMatrix(cameraToWorld, o);
     int w = 1024, h = 768;
-    double angle = 45;
-    Viewer v(origin,w,h,angle);
+    double angle = 45; // in degrees
+    Viewer v(origin,angle, w,h);
     vector<Object> spheres;
     Point centre1(0.0, 0, -20);
     double rad1 = 4;
@@ -120,17 +119,17 @@ int main(){
 
 
     // rendering the scene
-    double scale = tan(angle * M_PI / 180); 
-    double imageAspectRatio = w / h; 
+    double scale = tan((angle * M_PI)/180); 
+    double imageAspectRatio = (w*1.0)/h; 
     for (int j = 0; j < h; ++j) { 
         for (int i = 0; i < w; ++i) { 
-            float x = (2 * ((i + 0.5) / w) - 1) * imageAspectRatio * scale; 
-            float y = (1 - 2 * ((j + 0.5) / h)) * scale; 
+            float x = (2 * ((i + 0.5) / (w*1.0)) - 1) * imageAspectRatio * scale; 
+            float y = (1 - 2 * ((j + 0.5) / (h*1.0))) * scale; 
             Point a(x,y,-1);
             Point b = multiplyMatrix(cameraToWorld ,a );
             Vector dir = getSubtractionVector(origin,b); 
             Ray r(origin , dir);
-            vector<double> rgb= s.getIllumination(r, -1, 3, 1);
+            vector<double> rgb= s.getIllumination(r, -1, 3, true);
             pixels[i*w + j].r = rgb[0];
 			pixels[i*w + j].g = rgb[1];
 			pixels[i*w + j].b = rgb[2];

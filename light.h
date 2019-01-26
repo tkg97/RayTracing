@@ -15,4 +15,4 @@ class LightSource{
         vector<double> getIntensity(){
             return intensity;
         }
-}
+};
