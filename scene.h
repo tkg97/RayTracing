@@ -14,15 +14,16 @@ class Scene{
         vector<LightSource> lightSources;
         Viewer eye;
         vector<double> ambientLight;
+        int recursionDepth;
 
         Vector getTransmissionVector(Vector i, Vector n, double rIndex1, double rIndex2){
-            double c = dotProduct(i,n);
+            double c = -dotProduct(i,n);
             double r = rIndex1/rIndex2;
-            Vector direction = multiplyVectorDouble(r, i) + multiplyVectorDouble(sqrt(1 - r*r*(1 - c*c)) + r*c, n);
+            Vector direction = multiplyVectorDouble(r, i) + multiplyVectorDouble(-sqrt(1 - r*r*(1 - c*c)) + r*c, n);
             return getUnitVector(direction);
         }
     public:
-        Scene(vector<Object*> o, vector<LightSource> l, vector<double> a, Viewer v) : objects(o), lightSources(l), ambientLight(a), eye(v){}
+        Scene(vector<Object*> o, vector<LightSource> l, vector<double> a, Viewer v, int r) : objects(o), lightSources(l), ambientLight(a), eye(v), recursionDepth(r){}
         vector<Object*> getObjectList(){
             return objects;
         }
@@ -98,15 +99,17 @@ class Scene{
                             multiplyVectorsPointwise(objects[objectIndex]->getSpecularCoefficient(), lightSources[i].getIntensity()));
                         // update total illumination
                         for(int i=0;i<3;i++){
-                            illumination[i] += diffusionIllumination[i] + specularIllumination[i];
+                            illumination[i] += (diffusionIllumination[i] + specularIllumination[i]);
                         }
                     } 
                 }
 				// now only ambient illumination is to be handled
-                vector<double> ambientIllumination = multiplyVectorsPointwise(objects[objectIndex]->getAmbientCoefficient(), ambientLight);
-                // update total illumination
-                for(int i=0;i<3;i++){
-                    illumination[i] += ambientIllumination[i];
+                if(depth==recursionDepth){
+                    vector<double> ambientIllumination = multiplyVectorsPointwise(objects[objectIndex]->getAmbientCoefficient(), ambientLight);
+                    // update total illumination
+                    for(int i=0;i<3;i++){
+                        illumination[i] += ambientIllumination[i];
+                    }
                 }
                 // now phong illumination is done at this point
                 // reflection and refraction has to be handled now

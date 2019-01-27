@@ -14,6 +14,7 @@ class Vector{
             result.i += this->i;
             result.j += this->j;
             result.k += this->k;
+            return result;
         }
 };
 
@@ -68,11 +69,10 @@ vector<double> multiplyVectorDouble(double a, vector<double> v){
 }
 
 Vector multiplyVectorDouble(double a, Vector v){
-    Vector result = v;
-    result.i *= a;
-    result.j *= a;
-    result.k *= a;
-    return result;
+    v.i *= a;
+    v.j *= a;
+    v.k *= a;
+    return v;
 }
 
 Point addPointVector(Point p, Vector v){
