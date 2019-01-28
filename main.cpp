@@ -113,7 +113,9 @@ int main(){
     Point Location1(0,20,-7);
     LightSource l1(Location1,{1,1,1});
 	lightSources.push_back(l1);
-    Scene s(spheres, lightSources, {1,1,1}, v );
+
+	int recursionDepth = 5;
+    Scene s(spheres, lightSources, {1,1,1}, v , recursionDepth);
     
 
     //creating the window
@@ -131,18 +133,12 @@ int main(){
             Point b = multiplyMatrix(cameraToWorld ,a );
             Vector dir = getSubtractionVector(origin,b); 
             Ray r(origin , dir);
-            vector<double> rgb= s.getIllumination(r, -1, 0, true);
-            pixels[j*w + i].r = rgb[0];
-			pixels[j*w + i].g = rgb[1];
-			pixels[j*w + i].b = rgb[2];
+            vector<double> rgb= s.getIllumination(r, -1, recursionDepth, true);
+            pixels[j*w + i].r = (rgb[0]<=1) ? rgb[0] : 1;
+            pixels[j*w + i].g = (rgb[1]<=1) ? rgb[1] : 1;
+            pixels[j*w + i].b = (rgb[2]<=1) ? rgb[2] : 1;
         } 
     }
-	// for (int i = 0; i < w; ++i) { 
-    //     for (int j = 0; j < h; ++j) {
-	// 		cout << "[" << pixels[j*w + i].r << " " << pixels[j*w + i].g << " " << pixels[j*w + i].b << "]" << " ";
-	// 	}
-	// 	cout << endl;
-	// }
 	cout << noIntersect << endl;
 	cout << shadow << endl;
     savebmp("rayTrace.bmp", w, h, 72, pixels);
