@@ -7,19 +7,17 @@
 #include "point.h"
 using namespace std;
 
-class Object{
-    // an abstract parent class for all the objects
-    vector<double> ambientCoefficient;
-    vector<double> diffuseCoefficient;
-    vector<double> specularCoefficient;
-    double refractiveIndex;
-    double phongExponent;
-	double reflectionConstant;
-	double refractionConstant;
-    bool planarity;
+class Material{
+        vector<double> ambientCoefficient;
+        vector<double> diffuseCoefficient;
+        vector<double> specularCoefficient;
+        double refractiveIndex;
+        double phongExponent;
+        double reflectionConstant;
+        double refractionConstant;
     public:
-        Object(vector<double> a, vector<double> d, vector<double> s, double r, double p, double c1, double c2, bool planar = false) : ambientCoefficient(a), diffuseCoefficient(d), specularCoefficient(s),
-                     refractiveIndex(r), phongExponent(p), reflectionConstant(c1), refractionConstant(c2), planarity(planar){}
+        Material(vector<double> a, vector<double> d, vector<double> s, double r, double p, double c1, double c2) : ambientCoefficient(a), diffuseCoefficient(d), specularCoefficient(s),
+                        refractiveIndex(r), phongExponent(p), reflectionConstant(c1), refractionConstant(c2){}
         vector<double> getAmbientCoefficient(){
             return ambientCoefficient;
         }
@@ -41,11 +39,40 @@ class Object{
         double getRefractionConstant(){
             return refractionConstant;
         }
+};
+
+class Object{
+    // an abstract parent class for all the objects
+        Material objectMaterial;
+        bool planarity;
+    public:
+        Object(Material m, bool planar = false) : objectMaterial(m), planarity(planar){}
+        vector<double> getAmbientCoefficient(){
+            return objectMaterial.getAmbientCoefficient();
+        }
+        vector<double> getDiffusionCoefficeint(){
+            return objectMaterial.getDiffusionCoefficeint();
+        }
+        vector<double> getSpecularCoefficient(){
+            return objectMaterial.getSpecularCoefficient();
+        }
+        double getRefractiveIndex(){
+            return objectMaterial.getRefractiveIndex();
+        }
+        double getPhongExponent(){
+            return objectMaterial.getPhongExponent();
+        }
+        double getReflectionConstant(){
+            return objectMaterial.getReflectionConstant();
+        }
+        double getRefractionConstant(){
+            return objectMaterial.getRefractionConstant();
+        }
         bool isPlanar(){
             return planarity;
         }
         virtual IntersectionPoint* getIntersection(Ray r, double minThreshold) = 0;
-        // minThreshold will help me handle the case for t==0
+        // minThreshold will help me handle the case for t==0 avoidance
 };
 
 class Sphere : public Object{
@@ -71,7 +98,7 @@ class Sphere : public Object{
     }
 
     public:
-        Sphere(double rad, Point pt, vector<double> a, vector<double> d, vector<double> s, double r, double p, double c1, double c2): Object(a, d, s, r, p, c1, c2), radius(rad), center(pt){}
+        Sphere(double rad, Point pt, Material m): Object(m), radius(rad), center(pt){}
 
         IntersectionPoint* getIntersection(Ray r, double minThreshold){
             // cout << "i am called" << endl;
@@ -146,7 +173,7 @@ class Box : public Object{
     }
     
     public:
-        Box(vector<Point> v, vector<double> a, vector<double> d, vector<double> s, double r, double p, double c1, double c2) : Object(a, d, s, r, p, c1, c2), coordinates(v){
+        Box(vector<Point> v, Material m) : Object(m), coordinates(v){
             calculateAllNormals();
             storeReferencePoints();
         }
@@ -196,6 +223,7 @@ class Box : public Object{
 
 class quadric : public Object{
     //  ax^2 + by^2 + cz^2 + 2fyz + 2gzx + 2hxy + 2px + 2qy + 2rz + d = 0.
+    // Assumed to be hollow from inside
     double a, b, c, f, g, h, p, q, r, d;
 
     double getValueA(double x1, double y1, double z1, double x2, double y2, double z2){
@@ -221,9 +249,8 @@ class quadric : public Object{
     }
 
     public:
-        quadric(double d1, double d2, double d3, double d4, double d5, double d6, double d7, double d8, double d9, double d10,
-			vector<double> amb, vector<double> d, vector<double> s, double r, double p, double c1, double c2, bool planar = false) : Object(amb, d, s, r, p, c1, c2, planar),
-            a(d1), b(d2), c(d3), f(d4), g(d5), h(d6), p(d7), q(d8), r(d9), d(d10){}
+        quadric(double d1, double d2, double d3, double d4, double d5, double d6, double d7, double d8, double d9, double d10, Material m)
+        : Object(m, true),a(d1), b(d2), c(d3), f(d4), g(d5), h(d6), p(d7), q(d8), r(d9), d(d10){}
 
         IntersectionPoint* getIntersection(Ray r, double minThreshold){
             Point raySource = r.getSource();
@@ -380,7 +407,7 @@ class Polygon : public Object{
     }
 
     public:
-        Polygon(int t, vector<Point> v, vector<double> a, vector<double> d, vector<double> s, double r, double p, double c1, double c2) : Object(a, d, s, r, p, c1, c2, true){
+        Polygon(int t, vector<Point> v, Material m) : Object(m, true){
             n=t;
             for(int i=0;i<n;i++){
                coordinates.push_back(v[i]); 
