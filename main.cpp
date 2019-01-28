@@ -119,7 +119,7 @@ int main(){
 	coord1.push_back(p2);
 	coord1.push_back(p3);
 	coord1.push_back(p4);
-	Polygon rect(4 , coord1, {0.2, 0.2, 0.2},{1, 1, 1},{0,0,0}, 5, 20 , 1, 0);
+	Polygon rect(4 , coord1, {0.2, 0.2, 0.2},{0.5, 0.5, 0.5},{0,0,0}, 5, 20 , 1, 0);
     spheres.push_back(&rect);
 
     vector<LightSource> lightSources;
@@ -159,4 +159,4 @@ int main(){
     return 0;
 }
 
-
+//TODO: light source into the object
