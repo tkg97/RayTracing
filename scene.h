@@ -73,6 +73,7 @@ class Scene{
                 for(int i=0;i<lightSources.size();i++){
                     int shadowParameter = 0; // 0 means no shadow, 1 means complete shadow
                     Vector direction = getSubtractionVector(minIntersectionPoint->getLocation(), lightSources[i].getLocation());
+                    double lightSourceDistance = sqrt((direction.i * direction.i) + (direction.j * direction.j) + (direction.k * direction.k));
                     Ray shadowRay(minIntersectionPoint->getLocation(), direction);
 					for (int j = 0; j< objects.size();j++) {
 						IntersectionPoint* p;
@@ -81,7 +82,7 @@ class Scene{
                         }
                         else p = objects[j]->getIntersection(shadowRay, 0);
 						//TODO : currently shadow parameter is 0/1, update it with heuristic of opaqueness
-						if (p != nullptr) {
+						if (p != nullptr && p->getRayParameter()<=lightSourceDistance) {
 							shadowParameter = 1;
 						}
 					}
