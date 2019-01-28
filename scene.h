@@ -89,12 +89,12 @@ class Scene{
                     if(shadowParameter!=1){
                         shadow++;
                         Vector unitLightDirection = getUnitVector(direction); //shadowRay.getDirection()
-                        double cosineLightNormal = dotProduct(unitLightDirection,minIntersectionPoint->getNormal());
+                        double cosineLightNormal = abs(dotProduct(unitLightDirection,minIntersectionPoint->getNormal()));
                         vector<double> diffusionIllumination = multiplyVectorDouble(cosineLightNormal,
                             multiplyVectorsPointwise(objects[objectIndex]->getDiffusionCoefficeint(), lightSources[i].getIntensity()));
                         Vector unitViewDirection = getUnitVector(getSubtractionVector(minIntersectionPoint->getLocation(), eye.getEyeLocation()));
                         double cosineLightView = dotProduct(unitLightDirection, unitViewDirection);
-                        double cosineNormalView = dotProduct(minIntersectionPoint->getNormal(), unitViewDirection);
+                        double cosineNormalView = abs(dotProduct(minIntersectionPoint->getNormal(), unitViewDirection));
                         double cosineReflectionView = 2*(cosineLightNormal)*(cosineNormalView) - (cosineLightView); 
                         vector<double> specularIllumination = multiplyVectorDouble(pow(cosineReflectionView, objects[objectIndex]->getPhongExponent()),
                             multiplyVectorsPointwise(objects[objectIndex]->getSpecularCoefficient(), lightSources[i].getIntensity()));
@@ -119,8 +119,11 @@ class Scene{
                     //Reflection
                     if(objects[objectIndex]->getReflectionConstant()>=0.0001){
                         double cosineIncidentNormal = dotProduct(r.getDirection(), minIntersectionPoint->getNormal());
-                        Vector reflectionDirection = r.getDirection() + multiplyVectorDouble(-2*cosineIncidentNormal, minIntersectionPoint->getNormal());
-                        
+                        Vector reflectionDirection(0,0,0);
+                        if(cosineIncidentNormal>=0){
+                            reflectionDirection = r.getDirection() + multiplyVectorDouble(-2*cosineIncidentNormal, minIntersectionPoint->getNormal());
+                        }
+                        else reflectionDirection = r.getDirection() + multiplyVectorDouble(2*cosineIncidentNormal, minIntersectionPoint->getNormal());
                         Ray reflectionRay(minIntersectionPoint->getLocation(), reflectionDirection);
 
                         vector<double> reflectionIllumination = getIllumination(reflectionRay, objectIndex, depth-1, toEnter);
