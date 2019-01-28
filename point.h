@@ -53,19 +53,17 @@ Vector getUnitVector(Vector v){
 
 vector<double> multiplyVectorsPointwise(vector<double>v1, vector<double>v2){
     // Both vectors should be of same size
-    vector<double> result;
     for(int i=0;i<v1.size();i++){
-        result.push_back(v1[i]*v2[i]);
+        v1[i] *= v2[i];
     }
-    return result;
+    return v1;
 }
 
 vector<double> multiplyVectorDouble(double a, vector<double> v){
-    vector<double> result;
     for(int i=0;i<v.size();i++){
-        result.push_back(v[i]*a);
+        v[i] *= a;
     }
-    return result;
+    return v;
 }
 
 Vector multiplyVectorDouble(double a, Vector v){
@@ -83,6 +81,7 @@ Point addPointVector(Point p, Vector v){
 }
 
 Vector crossProduct(Point p1, Point p2, Point p3){
+    // forms two vectors u(p2p1) and v(p3p2) and returns u cross v
     double u1 = p1.x - p2.x;
     double u2 = p1.y - p2.y;
     double u3 = p1.z - p2.z;
@@ -103,6 +102,7 @@ double dotProduct(Vector p1, Vector p2){
 }
 
 Vector getSubtractionVector(Point p1, Point p2){
+    // vector p1p2 (p2 - p1)
     double x = p2.x - p1.x;
     double y = p2.y - p1.y;
     double z = p2.z - p1.z;
