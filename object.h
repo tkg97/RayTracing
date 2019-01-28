@@ -293,17 +293,38 @@ class Polygon : public Object{
     // and the line segment 'q1q2' intersect. 
     bool doIntersect(Point p0, Point q1, Point q2, Vector p1) 
     { 
-        double x_comp = q1.x - q2.x;
-        double y_comp = q1.y - q2.y;
-        double z_comp = q1.z - q2.z;
+        double a1 = p1.i , a2= p1.j , a3 = p1.k;
+        double b1 = q1.x - q2.x;
+        double b2 = q1.y - q2.y;
+        double b3 = q1.z - q2.z;
+        double c1 = q1.x - p0.x , c2 = q1.y - p0.y , c3  = q1.z - p0.z;
         // t1 and t2 represent the intersection point
-        double t1 = (y_comp*q1.x - x_comp*q1.y-p0.x*y_comp + p0.y*x_comp)/(p1.i*y_comp - p1.j*x_comp);
-        double t2 = (z_comp*q1.x - x_comp*q1.z-p0.x*z_comp + p0.z*x_comp)/(p1.i*z_comp - p1.k*x_comp);
-        // return the ratio of distances of the line segments 
-        double slope = (q1.x - p0.x - p1.i*t1)/(q1.x - q2.x);
-        // check if t1 and t2 are same and the ratio of distances should lie between 0 and 1
-        if(abs(t1-t2)<=0.0001 && slope >=-0.0001 && slope < 1.0001 ){
-            return true;
+        // cout<<x_comp<<" "<<y_comp<<" "<<z_comp<<" "<<p1.i<<" "<<p1.j<<" "<<p1.k<<endl;
+        // cout<<p1.i*y_comp - p1.j*x_comp<<" "<<p1.i*z_comp - p1.k*x_comp<<" "<<p1.j*z_comp - p1.k*y_comp<<" ";
+        double t1,t2,t3;
+        double r1,r2,r3;
+        // if(abs(t1-t2)>0.0001 || abs(t2-t3)>0.0001 || abs(t1-t3)>0.0001) return false;
+        if(abs(a1*b2 - a2*b1) >= 0.0001){
+            t1 = (c1*b2 - b1*c2)/(a1*b2 - a2*b1);
+            r1 = (-c1*a2 + a1*c2)/(a1*b2 - a2*b1);
+            if(abs(p0.z + p1.k*t1 - (q1.z + r1*(q2.z - q1.z)))<=0.001 && r1 <= 1.0001 && r1 >=-0.0001 && t1>=-0.0001)
+               return true;
+        }
+        else if(abs(a2*b3 - a3*b2) >= 0.0001){
+            t1 = (c2*b3 - b2*c3)/(a2*b3 - a3*b2);
+            r1 = (-c2*a3 + a2*c3)/(a2*b3 - a3*b2);
+            if(abs(p0.x + p1.i*t1 - (q1.x + r1*(q2.x - q1.x)))<=0.001 && r1 <= 1.0001 && r1 >=-0.0001 && t1>=-0.0001)
+               return true;
+        }
+        else if(abs(a1*b3 - a3*b1) >= 0.0001){
+            t1 = (c1*b3 - b1*c3)/(a1*b3 - a2*b3);
+            r1 = (-c1*a3 + a1*c3)/(a1*b3 - a3*b1);
+            if(abs(p0.y + p1.j*t1 - (q1.y + r1*(q2.y - q1.y)))<=0.001 && r1 <= 1.0001 && r1 >=-0.0001 && t1>=-0.0001)
+               return true;
+        }
+        else{
+            bool f = onSegment( q1 ,p0 , q2);
+            if(f==true) return true;
         }
         return false;
     } 
@@ -320,9 +341,10 @@ class Polygon : public Object{
         double u1 = p1.x - p2.x;
         double u2 = p1.y - p2.y;
         double u3 = p1.z - p2.z;
+        // cout<<u1<<" "<<u2<<" "<<u3<<endl;
         double norm = sqrt(u1*u1+u2*u2+u3*u3);
-        Vector direction(u3/norm,u3/norm,u3/norm); 
-    
+        Vector direction(u1/norm,u2/norm,u3/norm); 
+        
         // Count intersections of the above line with sides of polygon 
         int count = 0, i = 0; 
         do
@@ -343,7 +365,7 @@ class Polygon : public Object{
             } 
             i = next; 
         } while (i != 0); 
-    
+        // cout<<count<<" ";
         // Return true if count is odd, false otherwise 
         return count&1;  // Same as (count%2 == 1) 
     }
@@ -380,10 +402,11 @@ class Polygon : public Object{
              }
              double t = -(dotProduct(normal,v))/(dotProduct(normal,rd));
 			 if (t < minThreshold) return nullptr;
-			 Point intersection = addPointVector(r0, multiplyVectorDouble(t,rd));
-             bool c = isContained(intersection);
-             if(c)
-                return (new IntersectionPoint(intersection, getNormal(), t));   
+             
+			 Point intersection = addPointVector(r0, multiplyVectorDouble(t,rd));          
+             if(isContained(intersection)){
+                return (new IntersectionPoint(intersection, getNormal(), t));  
+             } 
              else
                 return nullptr;
         }     
