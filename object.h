@@ -128,12 +128,12 @@ class Box : public Object{
     vector<Point> referencePoints;
 
     void calculateAllNormals(){
-        normals.push_back(crossProduct(coordinates[2], coordinates[1], coordinates[0]));
-        normals.push_back(crossProduct(coordinates[0], coordinates[4], coordinates[7]));
-        normals.push_back(crossProduct(coordinates[4], coordinates[5], coordinates[6]));
-        normals.push_back(crossProduct(coordinates[5], coordinates[1], coordinates[2]));
+        normals.push_back(crossProduct(coordinates[0], coordinates[1], coordinates[2]));
+        normals.push_back(crossProduct(coordinates[7], coordinates[4], coordinates[0]));
+        normals.push_back(crossProduct(coordinates[6], coordinates[5], coordinates[4]));
+        normals.push_back(crossProduct(coordinates[2], coordinates[1], coordinates[5]));
         normals.push_back(crossProduct(coordinates[5], coordinates[1], coordinates[0]));
-        normals.push_back(crossProduct(coordinates[2], coordinates[3], coordinates[7]));
+        normals.push_back(crossProduct(coordinates[7], coordinates[3], coordinates[2]));
     }
 
     void storeReferencePoints(){
@@ -141,7 +141,7 @@ class Box : public Object{
         referencePoints.push_back(coordinates[0]);
         referencePoints.push_back(coordinates[4]);
         referencePoints.push_back(coordinates[5]);
-        referencePoints.push_back(coordinates[5]);
+        referencePoints.push_back(coordinates[0]);
         referencePoints.push_back(coordinates[2]);
     }
     
