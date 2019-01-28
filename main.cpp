@@ -102,15 +102,28 @@ int main(){
     Viewer v(origin,angle, w,h);
     vector<Object*> spheres;
     Point centre1(0.0, 0, -20);
-    double rad1 = 4;
-    Sphere s1(rad1 ,centre1, {0.2, 0.2, 0.2},{0.8, 0.8, 0.8},{0.1,0.1,0.1}, 5, 20 , 0.5, 0.1);
+    double rad1 = 2;
+    Sphere s1(rad1 ,centre1, {0.2, 0.2, 0.2},{0.8, 0.5, 0.9},{0.1,0.1,0.1}, 5, 20 , 0, 0);
     Point centre2(0.0, 10, -20);
-    double rad2 = 4;
-    Sphere s2(rad2 ,centre2, {0.2, 0.2, 0.2},{0.8, 0.8, 0.8},{0.1,0.1,0.1}, 5, 20 , 0.5, 0.1);
+    double rad2 = 2;
+    Sphere s2(rad2 ,centre2, {0.2, 0.2, 0.2},{0.7, 0.9, 0.8},{0.1,0.1,0.1}, 5, 20 , 0, 0);
     spheres.push_back(&s1);
     spheres.push_back(&s2);
+
+    vector<Point> coord1;
+	Point p1(-20,-10,-40);
+	Point p2(20,-10,-40);
+	Point p3(20,-10,-10);
+	Point p4(-20,-10,-10);
+	coord1.push_back(p1);
+	coord1.push_back(p2);
+	coord1.push_back(p3);
+	coord1.push_back(p4);
+	Polygon rect(4 , coord1, {0.2, 0.2, 0.2},{1, 1, 1},{0,0,0}, 5, 20 , 1, 0);
+    spheres.push_back(&rect);
+
     vector<LightSource> lightSources;
-    Point Location1(0,20,-7);
+    Point Location1(0,-5, -20);
     LightSource l1(Location1,{1,1,1});
 	lightSources.push_back(l1);
 
