@@ -34,8 +34,7 @@ int main(){
             pixels[j*w + i].b = (rgb[2]<=1) ? rgb[2] : 1;
         } 
     }
-	cout << noIntersect << endl;
-	cout << shadow << endl;
+	
     savebmp("rayTrace.bmp", w, h, 72, pixels);
 
     return 0;

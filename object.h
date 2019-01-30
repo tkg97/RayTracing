@@ -81,6 +81,7 @@ class Polygon : public Object {
 	Vector normal;
 	//returns true if q lies on line segment p-r
 	bool onSegment(Point p, Point q, Point r)
+	// first collinearity has to be checked
 	{
 		if (q.x <= max(p.x, r.x) && q.x >= min(p.x, r.x) &&
 			q.y <= max(p.y, r.y) && q.y >= min(p.y, r.y) &&
@@ -110,11 +111,10 @@ class Polygon : public Object {
 		double b3 = q1.z - q2.z;
 		double c1 = q1.x - p0.x, c2 = q1.y - p0.y, c3 = q1.z - p0.z;
 		// t1 and t2 represent the intersection point
-		// cout<<x_comp<<" "<<y_comp<<" "<<z_comp<<" "<<p1.i<<" "<<p1.j<<" "<<p1.k<<endl;
-		// cout<<p1.i*y_comp - p1.j*x_comp<<" "<<p1.i*z_comp - p1.k*x_comp<<" "<<p1.j*z_comp - p1.k*y_comp<<" ";
+		
 		double t1, t2, t3;
 		double r1, r2, r3;
-		// if(abs(t1-t2)>0.0001 || abs(t2-t3)>0.0001 || abs(t1-t3)>0.0001) return false;
+		
 		if (abs(a1*b2 - a2 * b1) >= 0.0001) {
 			t1 = (c1*b2 - b1 * c2) / (a1*b2 - a2 * b1);
 			r1 = (-c1 * a2 + a1 * c2) / (a1*b2 - a2 * b1);
@@ -134,8 +134,9 @@ class Polygon : public Object {
 				return true;
 		}
 		else {
+			bool c = !(orientation(q1, p0, q2));
 			bool f = onSegment(q1, p0, q2);
-			if (f == true) return true;
+			return c & f;
 		}
 		return false;
 	}
@@ -152,7 +153,6 @@ class Polygon : public Object {
 		double u1 = p1.x - p2.x;
 		double u2 = p1.y - p2.y;
 		double u3 = p1.z - p2.z;
-		// cout<<u1<<" "<<u2<<" "<<u3<<endl;
 		double norm = sqrt(u1*u1 + u2 * u2 + u3 * u3);
 		Vector direction(u1 / norm, u2 / norm, u3 / norm);
 
@@ -176,7 +176,6 @@ class Polygon : public Object {
 			}
 			i = next;
 		} while (i != 0);
-		// cout<<count<<" ";
 		// Return true if count is odd, false otherwise 
 		return count & 1;  // Same as (count%2 == 1) 
 	}
@@ -344,48 +343,6 @@ class Box : public Object{
 			}
 			return minIntersectionPoint;
 		}
-
-   //     IntersectionPoint* getIntersection(Ray r, double minThreshold){
-   //         Point raySource = r.getSource();
-   //         Vector rayDirection = r.getDirection(); 
-   //         double tEnterMax = DBL_MIN, tLeaveMin = DBL_MAX;
-   //         Vector nEnter(0, 0, 0); // Initialised to be a zero vector // normal
-			//Vector nLeave(0, 0, 0); // Initialised to be a zero vector // normal
-   //         for(int i=0;i<6;i++){
-   //             if(dotProduct(rayDirection, normals[i]) == 0){
-   //             // if ray is parallel to certain face and it is not contained in the face, then its probably useless
-   //             // And the case where it is contained is simply avoided
-   //                 continue;
-   //             }
-   //             if(dotProduct(rayDirection, normals[i]) <0){
-   //                 //ray is entering
-   //                 double t = -dotProduct(getSubtractionVector(referencePoints[i], raySource), normals[i])/(dotProduct(rayDirection, normals[i]));
-   //                 if(t>tEnterMax){
-   //                     tEnterMax = t;
-   //                     nEnter = normals[i];
-   //                 }
-   //             }
-   //             else{
-   //                 //ray is leaving
-   //                 double t = -dotProduct(getSubtractionVector(referencePoints[i], raySource), normals[i])/(dotProduct(rayDirection, normals[i]));
-			//		if (t < tLeaveMin) {
-			//			tLeaveMin = t;
-			//			nLeave = normals[i];
-			//		}
-   //             }
-   //         }
-   //         if(tEnterMax > tLeaveMin) return nullptr;
-   //         else{
-			//	if (tEnterMax >= minThreshold) {
-			//		Point l = (addPointVector(raySource, multiplyVectorDouble(tEnterMax, rayDirection)));
-			//		return (new IntersectionPoint(l, nEnter, tEnterMax));
-			//	}
-			//	else {
-			//		Point l = (addPointVector(raySource, multiplyVectorDouble(tLeaveMin, rayDirection)));
-			//		return (new IntersectionPoint(l, nLeave, tLeaveMin));
-			//	}
-   //         }
-   //     }
 };
 
 class Quadric : public Object{

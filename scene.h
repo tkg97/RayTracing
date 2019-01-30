@@ -9,9 +9,6 @@
 #include "camera.h"
 using namespace std;
 
-int noIntersect = 0;
-int shadow  = 0;
-
 class Scene{
         vector<Object*> objects;
         vector<LightSource> lightSources;
@@ -51,7 +48,7 @@ class Scene{
                 // just do the transmission stuff and return
                 IntersectionPoint* p = objects[objID]->getIntersection(r, 0.001);
 				if (p == nullptr) {
-					cout << "fuck" << endl;
+					// if somehow happens, in worst case due to minor error in double calculation
 					return vector<double>(3, 0);
 				}
                 Vector transmissionDirection = getTransmissionVector(r.getDirection(), p->getNormal(), objects[objID]->getRefractiveIndex(),1);
@@ -75,7 +72,6 @@ class Scene{
                 }
             }
             if(minIntersectionPoint==nullptr){
-                noIntersect++;
                 vector<double> illumination(3,0);
 				return illumination;
             }
@@ -103,7 +99,6 @@ class Scene{
 						}
 					}
                     if(shadowParameter!=1){
-                        shadow++;
                         Vector unitLightDirection = getUnitVector(direction); //shadowRay.getDirection()
                         double cosineLightNormal = abs(dotProduct(unitLightDirection,minIntersectionPoint->getNormal()));
                         vector<double> diffusionIllumination = multiplyVectorDouble(cosineLightNormal,
@@ -171,7 +166,6 @@ class Scene{
                         }
                     }
                 }
-                // cout << illumination[0] << " " << illumination[1] << " " << illumination[2] << endl;
                 return illumination;
             }
         }
