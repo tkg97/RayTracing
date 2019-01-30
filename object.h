@@ -374,7 +374,7 @@ class Quadric : public Object{
 
     public:
         Quadric(double d1, double d2, double d3, double d4, double d5, double d6, double d7, double d8, double d9, double d10, Material m)
-        : Object(m, true),a(d1), b(d2), c(d3), f(d4), g(d5), h(d6), p(d7), q(d8), r(d9), d(d10){}
+        : Object(m),a(d1), b(d2), c(d3), f(d4), g(d5), h(d6), p(d7), q(d8), r(d9), d(d10){}
 
         IntersectionPoint* getIntersection(Ray r, double minThreshold){
             Point raySource = r.getSource();

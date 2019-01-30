@@ -28,7 +28,7 @@ int main(){
     for (int i = 0; i < w; ++i) {
         for (int j = 0; j < h; ++j) {
 			Ray r = sceneObject.getRayFromViewer(i,j);
-            rgb = sceneObject.getIllumination(r, -1, rdepth, true);
+            rgb = sceneObject.getIllumination(r, -1, rdepth);
             pixels[j*w + i].r = (rgb[0]<=1) ? rgb[0] : 1;
             pixels[j*w + i].g = (rgb[1]<=1) ? rgb[1] : 1;
             pixels[j*w + i].b = (rgb[2]<=1) ? rgb[2] : 1;
@@ -39,5 +39,3 @@ int main(){
 
     return 0;
 }
-
-//TODO: light source into the object
