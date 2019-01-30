@@ -221,7 +221,7 @@ class Box : public Object{
         }
 };
 
-class quadric : public Object{
+class Quadric : public Object{
     //  ax^2 + by^2 + cz^2 + 2fyz + 2gzx + 2hxy + 2px + 2qy + 2rz + d = 0.
     // Assumed to be hollow from inside
     double a, b, c, f, g, h, p, q, r, d;
@@ -249,7 +249,7 @@ class quadric : public Object{
     }
 
     public:
-        quadric(double d1, double d2, double d3, double d4, double d5, double d6, double d7, double d8, double d9, double d10, Material m)
+        Quadric(double d1, double d2, double d3, double d4, double d5, double d6, double d7, double d8, double d9, double d10, Material m)
         : Object(m, true),a(d1), b(d2), c(d3), f(d4), g(d5), h(d6), p(d7), q(d8), r(d9), d(d10){}
 
         IntersectionPoint* getIntersection(Ray r, double minThreshold){
@@ -289,7 +289,7 @@ class quadric : public Object{
 };
 
 class Polygon : public Object{
-    int n; //vertexCount
+    int vertexCount; //vertexCount
     vector< Point > coordinates;
     //returns true if q lies on line segment p-r
     bool onSegment(Point p, Point q, Point r) 
@@ -306,13 +306,9 @@ class Polygon : public Object{
     // 0 --> p, q and r are colinear 
     // 1 --> if not
     int orientation(Point p, Point q, Point r) 
-    { 
-        double val1 = (q.y - p.y) * (r.x - q.x) - 
-                (q.x - p.x) * (r.y - q.y); 
-        double val2 = (q.z - p.z) * (r.x - q.x) - 
-                (q.x - p.x) * (r.z - q.z);  
-        if (abs(val1) <= 0.0001 && abs(val2)<=0.0001 ) return 0;  // colinear 
-        // return (val > 0)? 1: 2; // clock or counterclock wise 
+    {
+		Vector crossProductVal = crossProduct(p, q, r);  
+        if (abs(crossProductVal.i) <= 0.0001 && abs(crossProductVal.j)<=0.0001 && abs(crossProductVal.k) <=0.0001) return 0;  // collinear  
         return  1;
     } 
 
@@ -344,7 +340,7 @@ class Polygon : public Object{
                return true;
         }
         else if(abs(a1*b3 - a3*b1) >= 0.0001){
-            t1 = (c1*b3 - b1*c3)/(a1*b3 - a2*b3);
+            t1 = (c1*b3 - b1*c3)/(a1*b3 - a3*b1);
             r1 = (-c1*a3 + a1*c3)/(a1*b3 - a3*b1);
             if(abs(p0.y + p1.j*t1 - (q1.y + r1*(q2.y - q1.y)))<=0.001 && r1 <= 1.0001 && r1 >=-0.0001 && t1>=-0.0001)
                return true;
@@ -356,11 +352,11 @@ class Polygon : public Object{
         return false;
     } 
 
-    // Returns true if the point p lies inside the polygon[] with n vertices 
+    // Returns true if the point p lies inside the polygon[] with vertexCount vertices 
     bool isContained(Point p) 
     { 
         // There must be at least 3 vertices in polygon[] 
-        if (n < 3)  return false; 
+        if (vertexCount < 3)  return false; 
         
         // Create a direction for a ray from p parallel to some edge
         Point p1 = coordinates[0];
@@ -376,7 +372,7 @@ class Polygon : public Object{
         int count = 0, i = 0; 
         do
         { 
-            int next = (i+1)%n; 
+            int next = (i+1)%vertexCount; 
     
             // Check if the line segment from 'p' in direction given by 'direction' intersects 
             // with the line segment from 'coordinates[i]' to 'coordinates[next]' 
@@ -407,12 +403,7 @@ class Polygon : public Object{
     }
 
     public:
-        Polygon(int t, vector<Point> v, Material m) : Object(m, true){
-            n=t;
-            for(int i=0;i<n;i++){
-               coordinates.push_back(v[i]); 
-            }
-        }
+        Polygon(int n, vector<Point> v, Material m) : Object(m, true), vertexCount(n), coordinates(v){}
         
         // get the intersection of ray with the polygon
         IntersectionPoint* getIntersection(Ray r1, double minThreshold){
