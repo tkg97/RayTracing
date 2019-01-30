@@ -6,13 +6,16 @@
 using namespace std;
 
 class Viewer{
-    Point eyeLocation;
+	Point eyeLocation;
     int width, height;
-    double angle;
+    double angle; // multiple of M_PI
+    vector <vector <double> > transformationMatrix;
     public:
-        Viewer(Point& e, double f, int w, int h) : eyeLocation(e),angle(f), width(w), height(h){}
+        Viewer(double f, int w, int h, vector< vector<double> >m) : angle(f), width(w), height(h), transformationMatrix(m), eyeLocation(0,0,0){
+			eyeLocation = multiplyMatrix(transformationMatrix, eyeLocation);
+		}
         Point getEyeLocation(){
-            return eyeLocation;
+			return eyeLocation;
         }
         double getAngle(){
             return angle;
@@ -23,4 +26,14 @@ class Viewer{
         int getHeight(){
             return height;
         }
+        vector<vector<double>> getTransformationMatrix(){
+            return transformationMatrix;
+        }
+
+		Vector getRayDirection(double x, double y) {
+			Point a(x, y, -1);
+			Point b = multiplyMatrix(transformationMatrix, a);
+			Vector dir = getSubtractionVector(eyeLocation, b);
+			return dir;
+		}
 };
