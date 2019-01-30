@@ -26,7 +26,6 @@ int main(){
 	vector<double> rgb;
 
     for (int i = 0; i < w; ++i) {
-		if (i % 20 == 0) cout << "I am still here" << endl;
         for (int j = 0; j < h; ++j) {
 			Ray r = sceneObject.getRayFromViewer(i,j);
             rgb = sceneObject.getIllumination(r, -1, rdepth, true);

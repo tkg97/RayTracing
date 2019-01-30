@@ -50,6 +50,10 @@ class Scene{
             if(toEnter==false){
                 // just do the transmission stuff and return
                 IntersectionPoint* p = objects[objID]->getIntersection(r, 0.001);
+				if (p == nullptr) {
+					cout << "fuck" << endl;
+					return vector<double>(3, 0);
+				}
                 Vector transmissionDirection = getTransmissionVector(r.getDirection(), p->getNormal(), objects[objID]->getRefractiveIndex(),1);
                 Ray transmissionRay(p->getLocation(), transmissionDirection);
                 vector<double> illumination = getIllumination(transmissionRay, objID, depth, true);
@@ -83,7 +87,10 @@ class Scene{
                     int shadowParameter = 0; // 0 means no shadow, 1 means complete shadow
                     Vector direction = getSubtractionVector(minIntersectionPoint->getLocation(), lightSources[i].getLocation());
                     double lightSourceDistance = sqrt((direction.i * direction.i) + (direction.j * direction.j) + (direction.k * direction.k));
-                    Ray shadowRay(minIntersectionPoint->getLocation(), direction);
+					Ray shadowRay(minIntersectionPoint->getLocation(), direction);
+					double cosineRayNormal = dotProduct(r.getDirection(), minIntersectionPoint->getNormal());
+					double cosineLightNormal = dotProduct(shadowRay.getDirection(), minIntersectionPoint->getNormal());
+					if ((cosineLightNormal >= 0 && cosineRayNormal >= 0) || (cosineLightNormal <= 0 && cosineRayNormal <= 0)) shadowParameter = 1;
 					for (int j = 0; j< objects.size();j++) {
 						IntersectionPoint* p;
                         if(j==objectIndex){
@@ -101,8 +108,8 @@ class Scene{
                         double cosineLightNormal = abs(dotProduct(unitLightDirection,minIntersectionPoint->getNormal()));
                         vector<double> diffusionIllumination = multiplyVectorDouble(cosineLightNormal,
                             multiplyVectorsPointwise(objects[objectIndex]->getDiffusionCoefficeint(), lightSources[i].getIntensity()));
-                        Vector unitViewDirection = getUnitVector(getSubtractionVector(minIntersectionPoint->getLocation(), eye.getEyeLocation()));
-                        double cosineLightView = dotProduct(unitLightDirection, unitViewDirection);
+						Vector unitViewDirection = multiplyVectorDouble(-1, r.getDirection());
+						double cosineLightView = dotProduct(unitLightDirection, unitViewDirection);
                         double cosineNormalView = abs(dotProduct(minIntersectionPoint->getNormal(), unitViewDirection));
                         double cosineReflectionView = 2*(cosineLightNormal)*(cosineNormalView) - (cosineLightView); 
                         vector<double> specularIllumination = multiplyVectorDouble(pow(cosineReflectionView, objects[objectIndex]->getPhongExponent()),

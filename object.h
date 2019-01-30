@@ -75,6 +75,150 @@ class Object{
         // minThreshold will help me handle the case for t==0 avoidance
 };
 
+class Polygon : public Object {
+	int vertexCount; //vertexCount
+	vector< Point > coordinates;
+	Vector normal;
+	//returns true if q lies on line segment p-r
+	bool onSegment(Point p, Point q, Point r)
+	{
+		if (q.x <= max(p.x, r.x) && q.x >= min(p.x, r.x) &&
+			q.y <= max(p.y, r.y) && q.y >= min(p.y, r.y) &&
+			q.z <= max(p.z, r.z) && q.z >= min(p.z, r.z))
+			return true;
+		return false;
+	}
+
+	// To find orientation of ordered triplet (p, q, r). 
+	// The function returns following values 
+	// 0 --> p, q and r are colinear 
+	// 1 --> if not
+	int orientation(Point p, Point q, Point r)
+	{
+		Vector crossProductVal = crossProduct(p, q, r);
+		if (abs(crossProductVal.i) <= 0.0001 && abs(crossProductVal.j) <= 0.0001 && abs(crossProductVal.k) <= 0.0001) return 0;  // collinear  
+		return  1;
+	}
+
+	// The function that returns true if the ray 'p0 + p1*t' 
+	// and the line segment 'q1q2' intersect. 
+	bool doIntersect(Point p0, Point q1, Point q2, Vector p1)
+	{
+		double a1 = p1.i, a2 = p1.j, a3 = p1.k;
+		double b1 = q1.x - q2.x;
+		double b2 = q1.y - q2.y;
+		double b3 = q1.z - q2.z;
+		double c1 = q1.x - p0.x, c2 = q1.y - p0.y, c3 = q1.z - p0.z;
+		// t1 and t2 represent the intersection point
+		// cout<<x_comp<<" "<<y_comp<<" "<<z_comp<<" "<<p1.i<<" "<<p1.j<<" "<<p1.k<<endl;
+		// cout<<p1.i*y_comp - p1.j*x_comp<<" "<<p1.i*z_comp - p1.k*x_comp<<" "<<p1.j*z_comp - p1.k*y_comp<<" ";
+		double t1, t2, t3;
+		double r1, r2, r3;
+		// if(abs(t1-t2)>0.0001 || abs(t2-t3)>0.0001 || abs(t1-t3)>0.0001) return false;
+		if (abs(a1*b2 - a2 * b1) >= 0.0001) {
+			t1 = (c1*b2 - b1 * c2) / (a1*b2 - a2 * b1);
+			r1 = (-c1 * a2 + a1 * c2) / (a1*b2 - a2 * b1);
+			if (abs(p0.z + p1.k*t1 - (q1.z + r1 * (q2.z - q1.z))) <= 0.001 && r1 <= 1.0001 && r1 >= -0.0001 && t1 >= -0.0001)
+				return true;
+		}
+		else if (abs(a2*b3 - a3 * b2) >= 0.0001) {
+			t1 = (c2*b3 - b2 * c3) / (a2*b3 - a3 * b2);
+			r1 = (-c2 * a3 + a2 * c3) / (a2*b3 - a3 * b2);
+			if (abs(p0.x + p1.i*t1 - (q1.x + r1 * (q2.x - q1.x))) <= 0.001 && r1 <= 1.0001 && r1 >= -0.0001 && t1 >= -0.0001)
+				return true;
+		}
+		else if (abs(a1*b3 - a3 * b1) >= 0.0001) {
+			t1 = (c1*b3 - b1 * c3) / (a1*b3 - a3 * b1);
+			r1 = (-c1 * a3 + a1 * c3) / (a1*b3 - a3 * b1);
+			if (abs(p0.y + p1.j*t1 - (q1.y + r1 * (q2.y - q1.y))) <= 0.001 && r1 <= 1.0001 && r1 >= -0.0001 && t1 >= -0.0001)
+				return true;
+		}
+		else {
+			bool f = onSegment(q1, p0, q2);
+			if (f == true) return true;
+		}
+		return false;
+	}
+
+	// Returns true if the point p lies inside the polygon[] with vertexCount vertices 
+	bool isContained(Point p)
+	{
+		// There must be at least 3 vertices in polygon[] 
+		if (vertexCount < 3)  return false;
+
+		// Create a direction for a ray from p parallel to some edge
+		Point p1 = coordinates[0];
+		Point p2 = coordinates[1];
+		double u1 = p1.x - p2.x;
+		double u2 = p1.y - p2.y;
+		double u3 = p1.z - p2.z;
+		// cout<<u1<<" "<<u2<<" "<<u3<<endl;
+		double norm = sqrt(u1*u1 + u2 * u2 + u3 * u3);
+		Vector direction(u1 / norm, u2 / norm, u3 / norm);
+
+		// Count intersections of the above line with sides of polygon 
+		int count = 0, i = 0;
+		do
+		{
+			int next = (i + 1) % vertexCount;
+
+			// Check if the line segment from 'p' in direction given by 'direction' intersects 
+			// with the line segment from 'coordinates[i]' to 'coordinates[next]' 
+			if (doIntersect(p, coordinates[i], coordinates[next], direction))
+			{
+				// If the point 'p' is colinear with line segment 'i-next', 
+				// then check if it lies on segment. If it lies, return true, 
+				// otherwise false 
+				if (orientation(coordinates[i], p, coordinates[next]) == 0)
+					return onSegment(coordinates[i], p, coordinates[next]);
+
+				count++;
+			}
+			i = next;
+		} while (i != 0);
+		// cout<<count<<" ";
+		// Return true if count is odd, false otherwise 
+		return count & 1;  // Same as (count%2 == 1) 
+	}
+
+	// return normal to the polygon using 3 corner points
+	Vector getNormal() {
+		return normal;
+	}
+
+public:
+	Polygon(int n, vector<Point> v, Material m) : Object(m, true), vertexCount(n), coordinates(v), normal(0, 0, 0) {
+		Point p1 = coordinates[0];
+		Point p2 = coordinates[1];
+		Point p3 = coordinates[2];
+		normal = crossProduct(p1, p2, p3);
+	}
+
+	// get the intersection of ray with the polygon
+	IntersectionPoint* getIntersection(Ray r1, double minThreshold) {
+		Point r0 = r1.getSource();
+		Point p0 = coordinates[0];
+		Vector rd = r1.getDirection();
+		Vector normal = getNormal();
+		double a1 = r0.x - p0.x;
+		double a2 = r0.y - p0.y;
+		double a3 = r0.z - p0.z;
+		Vector v(a1, a2, a3);
+		if (abs(dotProduct(normal, rd)) <= 0.00001) {
+			return nullptr;
+		}
+		double t = -(dotProduct(normal, v)) / (dotProduct(normal, rd));
+		if (t < minThreshold) return nullptr;
+
+		Point intersection = addPointVector(r0, multiplyVectorDouble(t, rd));
+		if (isContained(intersection)) {
+			return (new IntersectionPoint(intersection, getNormal(), t));
+		}
+		else
+			return nullptr;
+	}
+};
+
 class Sphere : public Object{
     double radius;
     Point center;
@@ -101,7 +245,6 @@ class Sphere : public Object{
         Sphere(double rad, Point pt, Material m): Object(m), radius(rad), center(pt){}
 
         IntersectionPoint* getIntersection(Ray r, double minThreshold){
-            // cout << "i am called" << endl;
             Point raySource = r.getSource();
             Vector rayDirection = r.getDirection();
             double a = getValueA(raySource.x, raySource.y, raySource.z, rayDirection.i, rayDirection.j, rayDirection.k);
@@ -153,6 +296,7 @@ class Box : public Object{
     vector<Point> coordinates;
     vector<Vector> normals;
     vector<Point> referencePoints;
+	vector<Polygon> polygonFaces;
 
     void calculateAllNormals(){
         normals.push_back(crossProduct(coordinates[0], coordinates[1], coordinates[2]));
@@ -171,54 +315,77 @@ class Box : public Object{
         referencePoints.push_back(coordinates[0]);
         referencePoints.push_back(coordinates[2]);
     }
+
+	void storeAllPolygons(const Material &m) {
+		Polygon p1(4, { coordinates[0], coordinates[1], coordinates[2], coordinates[3] }, m);
+		Polygon p2(4, {coordinates[7], coordinates[4], coordinates[0], coordinates[3]}, m);
+		Polygon p3(4, {coordinates[6], coordinates[5], coordinates[4], coordinates[7]}, m);
+		Polygon p4(4, { coordinates[2], coordinates[1], coordinates[5], coordinates[6] }, m);
+		Polygon p5(4, { coordinates[5], coordinates[1], coordinates[0], coordinates[4] }, m);
+		Polygon p6(4, { coordinates[7], coordinates[3], coordinates[2], coordinates[6] }, m);
+		polygonFaces = vector<Polygon>({ p1, p2, p3, p4, p5, p6 });
+	}
     
     public:
         Box(vector<Point> v, Material m) : Object(m), coordinates(v){
             calculateAllNormals();
             storeReferencePoints();
+			storeAllPolygons(m);
         }
 
-        IntersectionPoint* getIntersection(Ray r, double minThreshold){
-            Point raySource = r.getSource();
-            Vector rayDirection = r.getDirection(); 
-            double tEnterMax = DBL_MIN, tLeaveMin = DBL_MAX;
-            Vector nEnter(0, 0, 0); // Initialised to be a zero vector // normal
-			Vector nLeave(0, 0, 0); // Initialised to be a zero vector // normal
-            for(int i=0;i<6;i++){
-                if(dotProduct(rayDirection, normals[i]) == 0){
-                // if ray is parallel to certain face and it is not contained in the face, then its probably useless
-                // And the case where it is contained is simply avoided
-                    continue;
-                }
-                if(dotProduct(rayDirection, normals[i]) <0){
-                    //ray is entering
-                    double t = -dotProduct(getSubtractionVector(referencePoints[i], raySource), normals[i])/(dotProduct(rayDirection, normals[i]));
-                    if(t>tEnterMax){
-                        tEnterMax = t;
-                        nEnter = normals[i];
-                    }
-                }
-                else{
-                    //ray is leaving
-                    double t = -dotProduct(getSubtractionVector(referencePoints[i], raySource), normals[i])/(dotProduct(rayDirection, normals[i]));
-					if (t < tLeaveMin) {
-						tLeaveMin = t;
-						nLeave = normals[i];
-					}
-                }
-            }
-            if(tEnterMax > tLeaveMin) return nullptr;
-            else{
-				if (tEnterMax >= minThreshold) {
-					Point l = (addPointVector(raySource, multiplyVectorDouble(tEnterMax, rayDirection)));
-					return (new IntersectionPoint(l, nEnter, tEnterMax));
+		IntersectionPoint* getIntersection(Ray r, double minThreshold) {
+			IntersectionPoint* minIntersectionPoint = nullptr;
+			for (int i = 0;i < 6;i++) {
+				IntersectionPoint* intersection = polygonFaces[i].getIntersection(r, minThreshold);
+				if (intersection != nullptr) {
+					if (minIntersectionPoint == nullptr) minIntersectionPoint = intersection;
+					else if (minIntersectionPoint->getRayParameter() > intersection->getRayParameter()) minIntersectionPoint = intersection;
 				}
-				else {
-					Point l = (addPointVector(raySource, multiplyVectorDouble(tLeaveMin, rayDirection)));
-					return (new IntersectionPoint(l, nLeave, tLeaveMin));
-				}
-            }
-        }
+			}
+			return minIntersectionPoint;
+		}
+
+   //     IntersectionPoint* getIntersection(Ray r, double minThreshold){
+   //         Point raySource = r.getSource();
+   //         Vector rayDirection = r.getDirection(); 
+   //         double tEnterMax = DBL_MIN, tLeaveMin = DBL_MAX;
+   //         Vector nEnter(0, 0, 0); // Initialised to be a zero vector // normal
+			//Vector nLeave(0, 0, 0); // Initialised to be a zero vector // normal
+   //         for(int i=0;i<6;i++){
+   //             if(dotProduct(rayDirection, normals[i]) == 0){
+   //             // if ray is parallel to certain face and it is not contained in the face, then its probably useless
+   //             // And the case where it is contained is simply avoided
+   //                 continue;
+   //             }
+   //             if(dotProduct(rayDirection, normals[i]) <0){
+   //                 //ray is entering
+   //                 double t = -dotProduct(getSubtractionVector(referencePoints[i], raySource), normals[i])/(dotProduct(rayDirection, normals[i]));
+   //                 if(t>tEnterMax){
+   //                     tEnterMax = t;
+   //                     nEnter = normals[i];
+   //                 }
+   //             }
+   //             else{
+   //                 //ray is leaving
+   //                 double t = -dotProduct(getSubtractionVector(referencePoints[i], raySource), normals[i])/(dotProduct(rayDirection, normals[i]));
+			//		if (t < tLeaveMin) {
+			//			tLeaveMin = t;
+			//			nLeave = normals[i];
+			//		}
+   //             }
+   //         }
+   //         if(tEnterMax > tLeaveMin) return nullptr;
+   //         else{
+			//	if (tEnterMax >= minThreshold) {
+			//		Point l = (addPointVector(raySource, multiplyVectorDouble(tEnterMax, rayDirection)));
+			//		return (new IntersectionPoint(l, nEnter, tEnterMax));
+			//	}
+			//	else {
+			//		Point l = (addPointVector(raySource, multiplyVectorDouble(tLeaveMin, rayDirection)));
+			//		return (new IntersectionPoint(l, nLeave, tLeaveMin));
+			//	}
+   //         }
+   //     }
 };
 
 class Quadric : public Object{
@@ -286,146 +453,4 @@ class Quadric : public Object{
                 return (new IntersectionPoint(l, n, t));
             }
         }
-};
-
-class Polygon : public Object{
-    int vertexCount; //vertexCount
-    vector< Point > coordinates;
-    //returns true if q lies on line segment p-r
-    bool onSegment(Point p, Point q, Point r) 
-    { 
-        if (q.x <= max(p.x, r.x) && q.x >= min(p.x, r.x) && 
-            q.y <= max(p.y, r.y) && q.y >= min(p.y, r.y) && 
-            q.z <= max(p.z, r.z) && q.z >= min(p.z, r.z) ) 
-            return true; 
-        return false; 
-    } 
-
-    // To find orientation of ordered triplet (p, q, r). 
-    // The function returns following values 
-    // 0 --> p, q and r are colinear 
-    // 1 --> if not
-    int orientation(Point p, Point q, Point r) 
-    {
-		Vector crossProductVal = crossProduct(p, q, r);  
-        if (abs(crossProductVal.i) <= 0.0001 && abs(crossProductVal.j)<=0.0001 && abs(crossProductVal.k) <=0.0001) return 0;  // collinear  
-        return  1;
-    } 
-
-    // The function that returns true if the ray 'p0 + p1*t' 
-    // and the line segment 'q1q2' intersect. 
-    bool doIntersect(Point p0, Point q1, Point q2, Vector p1) 
-    { 
-        double a1 = p1.i , a2= p1.j , a3 = p1.k;
-        double b1 = q1.x - q2.x;
-        double b2 = q1.y - q2.y;
-        double b3 = q1.z - q2.z;
-        double c1 = q1.x - p0.x , c2 = q1.y - p0.y , c3  = q1.z - p0.z;
-        // t1 and t2 represent the intersection point
-        // cout<<x_comp<<" "<<y_comp<<" "<<z_comp<<" "<<p1.i<<" "<<p1.j<<" "<<p1.k<<endl;
-        // cout<<p1.i*y_comp - p1.j*x_comp<<" "<<p1.i*z_comp - p1.k*x_comp<<" "<<p1.j*z_comp - p1.k*y_comp<<" ";
-        double t1,t2,t3;
-        double r1,r2,r3;
-        // if(abs(t1-t2)>0.0001 || abs(t2-t3)>0.0001 || abs(t1-t3)>0.0001) return false;
-        if(abs(a1*b2 - a2*b1) >= 0.0001){
-            t1 = (c1*b2 - b1*c2)/(a1*b2 - a2*b1);
-            r1 = (-c1*a2 + a1*c2)/(a1*b2 - a2*b1);
-            if(abs(p0.z + p1.k*t1 - (q1.z + r1*(q2.z - q1.z)))<=0.001 && r1 <= 1.0001 && r1 >=-0.0001 && t1>=-0.0001)
-               return true;
-        }
-        else if(abs(a2*b3 - a3*b2) >= 0.0001){
-            t1 = (c2*b3 - b2*c3)/(a2*b3 - a3*b2);
-            r1 = (-c2*a3 + a2*c3)/(a2*b3 - a3*b2);
-            if(abs(p0.x + p1.i*t1 - (q1.x + r1*(q2.x - q1.x)))<=0.001 && r1 <= 1.0001 && r1 >=-0.0001 && t1>=-0.0001)
-               return true;
-        }
-        else if(abs(a1*b3 - a3*b1) >= 0.0001){
-            t1 = (c1*b3 - b1*c3)/(a1*b3 - a3*b1);
-            r1 = (-c1*a3 + a1*c3)/(a1*b3 - a3*b1);
-            if(abs(p0.y + p1.j*t1 - (q1.y + r1*(q2.y - q1.y)))<=0.001 && r1 <= 1.0001 && r1 >=-0.0001 && t1>=-0.0001)
-               return true;
-        }
-        else{
-            bool f = onSegment( q1 ,p0 , q2);
-            if(f==true) return true;
-        }
-        return false;
-    } 
-
-    // Returns true if the point p lies inside the polygon[] with vertexCount vertices 
-    bool isContained(Point p) 
-    { 
-        // There must be at least 3 vertices in polygon[] 
-        if (vertexCount < 3)  return false; 
-        
-        // Create a direction for a ray from p parallel to some edge
-        Point p1 = coordinates[0];
-        Point p2 = coordinates[1];
-        double u1 = p1.x - p2.x;
-        double u2 = p1.y - p2.y;
-        double u3 = p1.z - p2.z;
-        // cout<<u1<<" "<<u2<<" "<<u3<<endl;
-        double norm = sqrt(u1*u1+u2*u2+u3*u3);
-        Vector direction(u1/norm,u2/norm,u3/norm); 
-        
-        // Count intersections of the above line with sides of polygon 
-        int count = 0, i = 0; 
-        do
-        { 
-            int next = (i+1)%vertexCount; 
-    
-            // Check if the line segment from 'p' in direction given by 'direction' intersects 
-            // with the line segment from 'coordinates[i]' to 'coordinates[next]' 
-            if (doIntersect(p,coordinates[i], coordinates[next], direction)) 
-            { 
-                // If the point 'p' is colinear with line segment 'i-next', 
-                // then check if it lies on segment. If it lies, return true, 
-                // otherwise false 
-                if (orientation(coordinates[i], p, coordinates[next]) == 0) 
-                return onSegment(coordinates[i], p, coordinates[next]); 
-    
-                count++; 
-            } 
-            i = next; 
-        } while (i != 0); 
-        // cout<<count<<" ";
-        // Return true if count is odd, false otherwise 
-        return count&1;  // Same as (count%2 == 1) 
-    }
-
-    // return normal to the polygon using 3 corner points
-    Vector getNormal(){
-        Point p1 = coordinates[0];
-        Point p2 = coordinates[1];
-        Point p3 = coordinates[2];
-        Vector normal = crossProduct(p1,p2,p3);
-        return normal;
-    }
-
-    public:
-        Polygon(int n, vector<Point> v, Material m) : Object(m, true), vertexCount(n), coordinates(v){}
-        
-        // get the intersection of ray with the polygon
-        IntersectionPoint* getIntersection(Ray r1, double minThreshold){
-             Point r0 = r1.getSource();
-             Point p0 = coordinates[0];
-             Vector rd = r1.getDirection();
-             Vector normal = getNormal();
-             double a1 = r0.x - p0.x;
-             double a2 = r0.y - p0.y;
-             double a3 = r0.z - p0.z;
-             Vector v(a1,a2,a3);
-             if(abs(dotProduct(normal,rd))<=0.00001){
-                  return nullptr;
-             }
-             double t = -(dotProduct(normal,v))/(dotProduct(normal,rd));
-			 if (t < minThreshold) return nullptr;
-             
-			 Point intersection = addPointVector(r0, multiplyVectorDouble(t,rd));          
-             if(isContained(intersection)){
-                return (new IntersectionPoint(intersection, getNormal(), t));  
-             } 
-             else
-                return nullptr;
-        }     
 };
