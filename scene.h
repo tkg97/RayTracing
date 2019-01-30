@@ -1,8 +1,11 @@
 #pragma once
-
 #include <vector>
+#include <cfloat>
 #include "object.h"
 #include "light.h"
+#include <cmath>
+#include <limits.h>
+#include <limits>
 #include "camera.h"
 using namespace std;
 
@@ -15,6 +18,8 @@ class Scene{
         Viewer eye;
         vector<double> ambientLight;
         int recursionDepth;
+		double scale;
+		double imageAspectRatio;
 
         Vector getTransmissionVector(Vector i, Vector n, double rIndex1, double rIndex2){
             double c = abs(dotProduct(i,n));
@@ -23,7 +28,10 @@ class Scene{
             return getUnitVector(direction);
         }
     public:
-        Scene(vector<Object*> o, vector<LightSource> l, vector<double> a, Viewer v, int r) : objects(o), lightSources(l), ambientLight(a), eye(v), recursionDepth(r){}
+        Scene(vector<Object*> o, vector<LightSource> l, vector<double> a, Viewer v, int r) : objects(o), lightSources(l), ambientLight(a), eye(v), recursionDepth(r){
+			scale = tan(eye.getAngle()*M_PI);
+			imageAspectRatio = (eye.getWidth()*1.0) / (eye.getHeight());
+		}
         vector<Object*> getObjectList(){
             return objects;
         }
@@ -33,7 +41,7 @@ class Scene{
         vector<double> getAmbientLight(){
             return ambientLight;
         }
-        vector<double> getIllumination(Ray r, int objID, int depth, bool toEnter){
+        vector<double> getIllumination(Ray& r, int objID, int depth, bool toEnter){
             // objID is the index of the object from which the ray is emerged
             // if depth becomes zero, reflection and transmission is not considered
             // toEnter differentiates whether it is an entering or exiting ray
@@ -64,7 +72,8 @@ class Scene{
             }
             if(minIntersectionPoint==nullptr){
                 noIntersect++;
-                return vector<double>(3,0);
+                vector<double> illumination(3,0);
+				return illumination;
             }
             else{
                 // now we have point of intersection, calculate the illumination
@@ -158,5 +167,28 @@ class Scene{
                 // cout << illumination[0] << " " << illumination[1] << " " << illumination[2] << endl;
                 return illumination;
             }
+        }
+        
+		double getViewingAngle(){
+            return eye.getAngle();
+        }
+        vector<vector<double> > getTransformationMatrix(){
+            return eye.getTransformationMatrix();
+        }
+        int getRecursionDepth(){
+            return recursionDepth;
+        }
+        int getWindowWidth(){
+            return eye.getWidth();
+        }
+        int getWindowHeight(){
+            return eye.getHeight();
+        }
+        Ray getRayFromViewer(int i, int j){
+            double x = (2 * ((i + 0.5) / (eye.getWidth()*1.0)) - 1) * imageAspectRatio * scale; 
+            double y = (2 * ((j + 0.5) / (eye.getHeight()*1.0)) - 1) * scale;
+			Vector dir = eye.getRayDirection(x, y);
+            Ray r(eye.getEyeLocation() , dir);
+            return r;
         }
 };
