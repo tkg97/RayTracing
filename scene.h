@@ -67,7 +67,7 @@ class Scene{
             else{
                 // now we have point of intersection, calculate the illumination
                 // Let us first check for shadows
-				if (dotProduct(r.getDirection(), minIntersectionPoint->getNormal()) >= 0 && typeid(objects[objectIndex]) != typeid(Polygon)) {
+				if (dotProduct(r.getDirection(), minIntersectionPoint->getNormal()) >= 0 && typeid(*(objects[objectIndex])) != typeid(Polygon)) {
 					// means the ray is exiting
 					Vector transmissionDirection = getTransmissionVector(r.getDirection(), minIntersectionPoint->getNormal(), objects[objectIndex]->getRefractiveIndex(), 1);
 					Ray transmissionRay(minIntersectionPoint->getLocation(), transmissionDirection);
