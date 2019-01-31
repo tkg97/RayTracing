@@ -128,10 +128,7 @@ class Scene{
                     if(objects[objectIndex]->getReflectionConstant()>=0.0001){
                         double cosineIncidentNormal = dotProduct(r.getDirection(), minIntersectionPoint->getNormal());
                         Vector reflectionDirection(0,0,0);
-                        if(cosineIncidentNormal>=0){
-                            reflectionDirection = r.getDirection() + multiplyVectorDouble(-2*cosineIncidentNormal, minIntersectionPoint->getNormal());
-                        }
-                        else reflectionDirection = r.getDirection() + multiplyVectorDouble(2*cosineIncidentNormal, minIntersectionPoint->getNormal());
+                        reflectionDirection = r.getDirection() + multiplyVectorDouble(-2*cosineIncidentNormal, minIntersectionPoint->getNormal());
                         Ray reflectionRay(minIntersectionPoint->getLocation(), reflectionDirection);
 
                         vector<double> reflectionIllumination = getIllumination(reflectionRay, objectIndex, depth-1);
