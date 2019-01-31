@@ -1,0 +1,42 @@
+[
+    {
+        "material": {
+            "ambientCoefficients": [ 0.2, 0.2, 0.2 ],
+            "diffusionCoefficients": [ 0.8, 0.8, 0.8 ],
+            "phongExponent": 20,
+            "reflectionConstant": 0,
+            "refractionConstant": 0,
+            "refractiveIndex": 5,
+            "specularCoefficients": [ 0.2, 0.2, 0.2 ]
+        },
+        "parameters": {
+            "radius": 1,
+            "center": [ 0, 0, -20 ]
+        },
+        "type": "sphere"
+    },
+    {
+        "type": "box",
+        "parameters": {
+            "coordinates": [
+                [ 0, 2, -17 ],
+                [ -3, 2, -20 ],
+                [ -3, -2, -20 ],
+                [ 0, -2, -17 ],
+                [ 3, 2, -20 ],
+                [ 0, 2, -23 ],
+                [ 0, -2, -23 ],
+                [ 3, -2, -20 ]
+            ]
+        },
+        "material": {
+            "ambientCoefficients": [ 0.1, 0.1, 0.1 ],
+            "diffusionCoefficients": [ 0.1, 0.1, 0.1 ],
+            "phongExponent": 20,
+            "reflectionConstant": 0,
+            "refractionConstant": 1,
+            "refractiveIndex": 5,
+            "specularCoefficients": [ 0.1, 0.1, 0.1 ]
+        }
+    }
+]
