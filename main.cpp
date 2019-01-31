@@ -27,11 +27,17 @@ int main(){
 
     for (int i = 0; i < w; ++i) {
         for (int j = 0; j < h; ++j) {
-			Ray r = sceneObject.getRayFromViewer(i,j);
-            rgb = sceneObject.getIllumination(r, -1, rdepth);
-            pixels[j*w + i].r = (rgb[0]<=1) ? rgb[0] : 1;
-            pixels[j*w + i].g = (rgb[1]<=1) ? rgb[1] : 1;
-            pixels[j*w + i].b = (rgb[2]<=1) ? rgb[2] : 1;
+			vector<Ray> rays = sceneObject.getRayFromViewer(i,j);
+			vector<double> temp = { 0,0,0 };
+			for (int k = 0; k < rays.size(); k++) {
+				rgb = sceneObject.getIllumination(rays[k], -1, rdepth);
+				for (int l = 0; l < 3; l++) {
+					temp[l] += rgb[l];
+				}
+			}
+			pixels[j*w + i].r = (temp[0]/5 <= 1) ? temp[0]/5 : 1;
+			pixels[j*w + i].g = (temp[1]/5 <= 1) ? temp[1]/5 : 1;
+			pixels[j*w + i].b = (temp[2]/5 <= 1) ? temp[2]/5 : 1;
         } 
     }
 	

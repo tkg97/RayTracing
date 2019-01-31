@@ -179,11 +179,29 @@ class Scene{
         int getWindowHeight(){
             return eye.getHeight();
         }
-        Ray getRayFromViewer(int i, int j){
+        vector<Ray> getRayFromViewer(int i, int j){
             double x = (2 * ((i + 0.5) / (eye.getWidth()*1.0)) - 1) * imageAspectRatio * scale; 
             double y = (2 * ((j + 0.5) / (eye.getHeight()*1.0)) - 1) * scale;
-			Vector dir = eye.getRayDirection(x, y);
-            Ray r(eye.getEyeLocation() , dir);
-            return r;
+			double x1 = x + scale / (eye.getHeight()*1.0);
+			double x2 = x - scale / (eye.getHeight()*1.0);
+			double y1 = y + scale / (eye.getHeight()*1.0);
+			double y2 = y - scale / (eye.getHeight()*1.0);
+			Vector dir1 = eye.getRayDirection(x, y);
+			Vector dir2 = eye.getRayDirection(x1, y1);
+			Vector dir3 = eye.getRayDirection(x1, y2);
+			Vector dir4 = eye.getRayDirection(x2, y1);
+			Vector dir5 = eye.getRayDirection(x2, y2);
+            Ray r1(eye.getEyeLocation() , dir1);
+			Ray r2(eye.getEyeLocation(), dir2);
+			Ray r3(eye.getEyeLocation(), dir3);
+			Ray r4(eye.getEyeLocation(), dir4);
+			Ray r5(eye.getEyeLocation(), dir5);
+			vector<Ray> rays;
+			rays.push_back(r1);
+			rays.push_back(r2);
+			rays.push_back(r3);
+			rays.push_back(r4);
+			rays.push_back(r5);
+            return rays;
         }
 };
