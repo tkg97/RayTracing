@@ -45,8 +45,15 @@ class Object{
     // an abstract parent class for all the objects
         Material objectMaterial;
         bool planarity;
+		vector<vector<double>> vertexTransformation;
+		vector<vector<double>> normalTransformation;
+		vector<vector<double>> rayTransformation;
     public:
-        Object(Material m, bool planar = false) : objectMaterial(m), planarity(planar){}
+        Object(Material m, vector<vector<double>> t, bool planar = false) : objectMaterial(m), planarity(planar), vertexTransformation(t)
+		{
+			rayTransformation = getMatrixInverse(vertexTransformation);
+			normalTransformation = getMatrixTranspose(rayTransformation);
+		}
         vector<double> getAmbientCoefficient(){
             return objectMaterial.getAmbientCoefficient();
         }
@@ -71,6 +78,15 @@ class Object{
         bool isPlanar(){
             return planarity;
         }
+		vector<vector<double>> getVertexTransformationMatrix() {
+			return vertexTransformation;
+		}
+		vector<vector<double>> getNormalTransformationMatrix() {
+			return normalTransformation;
+		}
+		vector<vector<double>> getRayTransformation() {
+			return rayTransformation;
+		}
         virtual IntersectionPoint* getIntersection(Ray r, double minThreshold) = 0;
         // minThreshold will help me handle the case for t==0 avoidance
 };
@@ -182,11 +198,11 @@ class Polygon : public Object {
 
 	// return normal to the polygon using 3 corner points
 	Vector getNormal() {
-		return normal;
+		return getUnitVector(multiplyMatrix(getNormalTransformationMatrix(), normal));
 	}
 
 public:
-	Polygon(int n, vector<Point> v, Material m) : Object(m, true), vertexCount(n), coordinates(v), normal(0, 0, 0) {
+	Polygon(int n, vector<Point> v, Material m, vector<vector<double>> t) : Object(m,t,true), vertexCount(n), coordinates(v), normal(0, 0, 0) {
 		Point p1 = coordinates[0];
 		Point p2 = coordinates[1];
 		Point p3 = coordinates[2];
@@ -195,6 +211,7 @@ public:
 
 	// get the intersection of ray with the polygon
 	IntersectionPoint* getIntersection(Ray r1, double minThreshold) {
+		r1 = getTransformedRay(r1, getRayTransformation());
 		Point r0 = r1.getSource();
 		Point p0 = coordinates[0];
 		Vector rd = r1.getDirection();
@@ -236,14 +253,15 @@ class Sphere : public Object{
     }
 
     Vector getNormal(Point p){
-        Vector normal = getSubtractionVector(center, p);
+        Vector normal = multiplyMatrix(getNormalTransformationMatrix() ,getSubtractionVector(center, p));
         return getUnitVector(normal);
     }
 
     public:
-        Sphere(double rad, Point pt, Material m): Object(m), radius(rad), center(pt){}
+        Sphere(double rad, Point pt, Material m, vector<vector<double>> t): Object(m,t), radius(rad), center(pt){}
 
         IntersectionPoint* getIntersection(Ray r, double minThreshold){
+			r = getTransformedRay(r, getRayTransformation());
             Point raySource = r.getSource();
             Vector rayDirection = r.getDirection();
             double a = getValueA(raySource.x, raySource.y, raySource.z, rayDirection.i, rayDirection.j, rayDirection.k);
@@ -293,43 +311,21 @@ class Box : public Object{
     */
 
     vector<Point> coordinates;
-    vector<Vector> normals;
-    vector<Point> referencePoints;
 	vector<Polygon> polygonFaces;
 
-    void calculateAllNormals(){
-        normals.push_back(crossProduct(coordinates[0], coordinates[1], coordinates[2]));
-        normals.push_back(crossProduct(coordinates[7], coordinates[4], coordinates[0]));
-        normals.push_back(crossProduct(coordinates[6], coordinates[5], coordinates[4]));
-        normals.push_back(crossProduct(coordinates[2], coordinates[1], coordinates[5]));
-        normals.push_back(crossProduct(coordinates[5], coordinates[1], coordinates[0]));
-        normals.push_back(crossProduct(coordinates[7], coordinates[3], coordinates[2]));
-    }
-
-    void storeReferencePoints(){
-        referencePoints.push_back(coordinates[2]);
-        referencePoints.push_back(coordinates[0]);
-        referencePoints.push_back(coordinates[4]);
-        referencePoints.push_back(coordinates[5]);
-        referencePoints.push_back(coordinates[0]);
-        referencePoints.push_back(coordinates[2]);
-    }
-
-	void storeAllPolygons(const Material &m) {
-		Polygon p1(4, { coordinates[0], coordinates[1], coordinates[2], coordinates[3] }, m);
-		Polygon p2(4, {coordinates[7], coordinates[4], coordinates[0], coordinates[3]}, m);
-		Polygon p3(4, {coordinates[6], coordinates[5], coordinates[4], coordinates[7]}, m);
-		Polygon p4(4, { coordinates[2], coordinates[1], coordinates[5], coordinates[6] }, m);
-		Polygon p5(4, { coordinates[5], coordinates[1], coordinates[0], coordinates[4] }, m);
-		Polygon p6(4, { coordinates[7], coordinates[3], coordinates[2], coordinates[6] }, m);
+	void storeAllPolygons(const Material &m, const vector<vector<double>> &t) {
+		Polygon p1(4, { coordinates[0], coordinates[1], coordinates[2], coordinates[3] }, m, t);
+		Polygon p2(4, {coordinates[7], coordinates[4], coordinates[0], coordinates[3]}, m, t);
+		Polygon p3(4, {coordinates[6], coordinates[5], coordinates[4], coordinates[7]}, m, t);
+		Polygon p4(4, { coordinates[2], coordinates[1], coordinates[5], coordinates[6] }, m, t);
+		Polygon p5(4, { coordinates[5], coordinates[1], coordinates[0], coordinates[4] }, m, t);
+		Polygon p6(4, { coordinates[7], coordinates[3], coordinates[2], coordinates[6] }, m, t);
 		polygonFaces = vector<Polygon>({ p1, p2, p3, p4, p5, p6 });
 	}
     
     public:
-        Box(vector<Point> v, Material m) : Object(m), coordinates(v){
-            calculateAllNormals();
-            storeReferencePoints();
-			storeAllPolygons(m);
+        Box(vector<Point> v, Material m, vector<vector<double> > t) : Object(m, t), coordinates(v){
+			storeAllPolygons(m, t);
         }
 
 		IntersectionPoint* getIntersection(Ray r, double minThreshold) {
@@ -369,14 +365,16 @@ class Quadric : public Object{
         double k = c*(pt.z) + f*(pt.y) + g*(pt.x) + r;
         double norm = sqrt(i*i + j*j + k*k);
         Vector normal(i/norm,j/norm,k/norm);
-        return normal;
+        return getUnitVector(multiplyMatrix(getNormalTransformationMatrix(),normal));
     }
 
     public:
-        Quadric(double d1, double d2, double d3, double d4, double d5, double d6, double d7, double d8, double d9, double d10, Material m)
-        : Object(m),a(d1), b(d2), c(d3), f(d4), g(d5), h(d6), p(d7), q(d8), r(d9), d(d10){}
+        Quadric(double d1, double d2, double d3, double d4, double d5, double d6, 
+			double d7, double d8, double d9, double d10, Material m, vector<vector<double> > t)
+        : Object(m,t),a(d1), b(d2), c(d3), f(d4), g(d5), h(d6), p(d7), q(d8), r(d9), d(d10){}
 
         IntersectionPoint* getIntersection(Ray r, double minThreshold){
+			r = getTransformedRay(r, getRayTransformation());
             Point raySource = r.getSource();
             Vector rayDirection = r.getDirection();
             double a = getValueA(raySource.x, raySource.y, raySource.z, rayDirection.i, rayDirection.j, rayDirection.k);

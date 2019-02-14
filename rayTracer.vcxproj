@@ -110,7 +110,6 @@
     <ClInclude Include="light.h" />
     <ClInclude Include="object.h" />
     <ClInclude Include="point.h" />
-    <ClInclude Include="resource.h" />
     <ClInclude Include="scene.h" />
     <ClInclude Include="sceneCreator.h" />
   </ItemGroup>

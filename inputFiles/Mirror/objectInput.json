@@ -1,145 +1,186 @@
 [
-  {
-    "material": {
-      "ambientCoefficients": [ 0.2, 0.2, 0.2 ],
-      "diffusionCoefficients": [ 0.4, 0.8, 0.8 ],
-      "phongExponent": 20,
-      "reflectionConstant": 0,
-      "refractionConstant": 0,
-      "refractiveIndex": 5,
-      "specularCoefficients": [ 0.1, 0.2, 0.2 ]
+    {
+        "material": {
+            "ambientCoefficients": [ 0.2, 0.2, 0.2 ],
+            "diffusionCoefficients": [ 0.4, 0.8, 0.8 ],
+            "phongExponent": 20,
+            "reflectionConstant": 0,
+            "refractionConstant": 0,
+            "refractiveIndex": 5,
+            "specularCoefficients": [ 0.1, 0.2, 0.2 ]
+        },
+        "parameters": {
+            "radius": 3,
+            "center": [ 0, -7, -25 ]
+        },
+        "type": "sphere",
+        "affineTransformation": [
+            [ 1, 0, 0, 0 ],
+            [ 0, 1, 0, 0 ],
+            [ 0, 0, 1, 0 ],
+            [ 0, 0, 0, 1 ]
+        ]
     },
-    "parameters": {
-      "radius": 3,
-      "center": [ 0, -7, -25 ]
+    {
+        "material": {
+            "ambientCoefficients": [ 0.1, 0.1, 0.1 ],
+            "diffusionCoefficients": [ 0.1, 0.1, 0.1 ],
+            "phongExponent": 20,
+            "reflectionConstant": 0.6,
+            "refractionConstant": 0,
+            "refractiveIndex": 5,
+            "specularCoefficients": [ 0.2, 0.2, 0.2 ]
+        },
+        "parameters": {
+            "vertexCount": 4,
+            "coordinates": [
+                [ 20, -10, -50 ],
+                [ -20, -10, -50 ],
+                [ -20, -10, -5 ],
+                [ 20, -10, -5 ]
+            ]
+        },
+        "type": "polygon",
+        "affineTransformation": [
+            [ 1, 0, 0, 0 ],
+            [ 0, 1, 0, 0 ],
+            [ 0, 0, 1, 0 ],
+            [ 0, 0, 0, 1 ]
+        ]
     },
-    "type": "sphere"
-  },
-  {
-    "material": {
-      "ambientCoefficients": [ 0.1, 0.1, 0.1 ],
-      "diffusionCoefficients": [ 0.1, 0.1, 0.1 ],
-      "phongExponent": 20,
-      "reflectionConstant": 0.6,
-      "refractionConstant": 0,
-      "refractiveIndex": 5,
-      "specularCoefficients": [ 0.2, 0.2, 0.2 ]
+    {
+        "material": {
+            "ambientCoefficients": [ 0.3, 0.3, 0.3 ],
+            "diffusionCoefficients": [ 0.1, 0.5, 0.1 ],
+            "phongExponent": 20,
+            "reflectionConstant": 0,
+            "refractionConstant": 0,
+            "refractiveIndex": 5,
+            "specularCoefficients": [ 0.2, 0.5, 0.2 ]
+        },
+        "parameters": {
+            "vertexCount": 4,
+            "coordinates": [
+                [ -20, -10, -50 ],
+                [ -20, -10, -5 ],
+                [ -20, 10, -5 ],
+                [ -20, 10, -50 ]
+            ]
+        },
+        "type": "polygon",
+        "affineTransformation": [
+            [ 1, 0, 0, 0 ],
+            [ 0, 1, 0, 0 ],
+            [ 0, 0, 1, 0 ],
+            [ 0, 0, 0, 1 ]
+        ]
     },
-    "parameters": {
-      "vertexCount": 4,
-      "coordinates": [
-        [ 20, -10, -50 ],
-        [ -20, -10, -50 ],
-        [ -20, -10, -5 ],
-        [ 20, -10, -5 ]
-      ]
+    {
+        "material": {
+            "ambientCoefficients": [ 0.3, 0.3, 0.3 ],
+            "diffusionCoefficients": [ 0.1, 0.5, 0.1 ],
+            "phongExponent": 20,
+            "reflectionConstant": 0,
+            "refractionConstant": 0,
+            "refractiveIndex": 5,
+            "specularCoefficients": [ 0.2, 0.5, 0.2 ]
+        },
+        "parameters": {
+            "vertexCount": 4,
+            "coordinates": [
+                [ 20, -10, -50 ],
+                [ 20, -10, -5 ],
+                [ 20, 10, -5 ],
+                [ 20, 10, -50 ]
+            ]
+        },
+        "type": "polygon",
+        "affineTransformation": [
+            [ 1, 0, 0, 0 ],
+            [ 0, 1, 0, 0 ],
+            [ 0, 0, 1, 0 ],
+            [ 0, 0, 0, 1 ]
+        ]
     },
-    "type": "polygon"
-  },
-  {
-    "material": {
-      "ambientCoefficients": [ 0.3, 0.3, 0.3 ],
-      "diffusionCoefficients": [ 0.1, 0.5, 0.1 ],
-      "phongExponent": 20,
-      "reflectionConstant": 0,
-      "refractionConstant": 0,
-      "refractiveIndex": 5,
-      "specularCoefficients": [ 0.2, 0.5, 0.2 ]
+    {
+        "material": {
+            "ambientCoefficients": [ 0.1, 0.1, 0.1 ],
+            "diffusionCoefficients": [ 0.1, 0.1, 0.1 ],
+            "phongExponent": 20,
+            "reflectionConstant": 0.6,
+            "refractionConstant": 0,
+            "refractiveIndex": 5,
+            "specularCoefficients": [ 0.5, 0.2, 0.2 ]
+        },
+        "parameters": {
+            "vertexCount": 4,
+            "coordinates": [
+                [ -20, -10, -50 ],
+                [ 20, -10, -50 ],
+                [ 20, 10, -50 ],
+                [ -20, 10, -50 ]
+            ]
+        },
+        "type": "polygon",
+        "affineTransformation": [
+            [ 1, 0, 0, 0 ],
+            [ 0, 1, 0, 0 ],
+            [ 0, 0, 1, 0 ],
+            [ 0, 0, 0, 1 ]
+        ]
     },
-    "parameters": {
-      "vertexCount": 4,
-      "coordinates": [
-        [ -20, -10, -50 ],
-        [ -20, -10, -5 ],
-        [ -20, 10, -5 ],
-        [ -20, 10, -50 ]
-      ]
+    {
+        "material": {
+            "ambientCoefficients": [ 1, 1, 1 ],
+            "diffusionCoefficients": [ 0.8, 0.8, 0.8 ],
+            "phongExponent": 20,
+            "reflectionConstant": 0.6,
+            "refractionConstant": 0,
+            "refractiveIndex": 5,
+            "specularCoefficients": [ 0.5, 0.5, 0.5 ]
+        },
+        "parameters": {
+            "vertexCount": 4,
+            "coordinates": [
+                [ -20, 10, -50 ],
+                [ 20, 10, -50 ],
+                [ 20, 10, -5 ],
+                [ -20, 10, -5 ]
+            ]
+        },
+        "type": "polygon",
+        "affineTransformation": [
+            [ 1, 0, 0, 0 ],
+            [ 0, 1, 0, 0 ],
+            [ 0, 0, 1, 0 ],
+            [ 0, 0, 0, 1 ]
+        ]
     },
-    "type": "polygon"
-  },
-  {
-    "material": {
-      "ambientCoefficients": [ 0.3, 0.3, 0.3 ],
-      "diffusionCoefficients": [ 0.1, 0.5, 0.1 ],
-      "phongExponent": 20,
-      "reflectionConstant": 0,
-      "refractionConstant": 0,
-      "refractiveIndex": 5,
-      "specularCoefficients": [ 0.2, 0.5, 0.2 ]
-    },
-    "parameters": {
-      "vertexCount": 4,
-      "coordinates": [
-        [ 20, -10, -50 ],
-        [ 20, -10, -5 ],
-        [ 20, 10, -5 ],
-        [ 20, 10, -50 ]
-      ]
-    },
-    "type": "polygon"
-  },
-  {
-    "material": {
-      "ambientCoefficients": [ 0.1, 0.1, 0.1 ],
-      "diffusionCoefficients": [ 0.1, 0.1, 0.1 ],
-      "phongExponent": 20,
-      "reflectionConstant": 0.6,
-      "refractionConstant": 0,
-      "refractiveIndex": 5,
-      "specularCoefficients": [ 0.5, 0.2, 0.2 ]
-    },
-    "parameters": {
-      "vertexCount": 4,
-      "coordinates": [
-        [ -20, -10, -50 ],
-        [ 20, -10, -50 ],
-        [ 20, 10, -50 ],
-        [ -20, 10, -50 ]
-      ]
-    },
-    "type": "polygon"
-  },
-  {
-    "material": {
-      "ambientCoefficients": [ 1, 1, 1 ],
-      "diffusionCoefficients": [ 0.8, 0.8, 0.8 ],
-      "phongExponent": 20,
-      "reflectionConstant": 0.6,
-      "refractionConstant": 0,
-      "refractiveIndex": 5,
-      "specularCoefficients": [ 0.5, 0.5, 0.5 ]
-    },
-    "parameters": {
-      "vertexCount": 4,
-      "coordinates": [
-        [ -20, 10, -50 ],
-        [ 20, 10, -50 ],
-        [ 20, 10, -5 ],
-        [ -20, 10, -5 ]
-      ]
-    },
-    "type": "polygon"
-  },
-  {
-    "material": {
-      "ambientCoefficients": [ 0.4, 0.1, 0.1 ],
-      "diffusionCoefficients": [ 0, 0, 0 ],
-      "phongExponent": 20,
-      "reflectionConstant": 0,
-      "refractionConstant": 1,
-      "refractiveIndex": 5,
-      "specularCoefficients": [ 0, 0, 0 ]
-    },
-    "parameters": {
-      "vertexCount": 4,
-      "coordinates": [
-        [ -20, -10, -5 ],
-        [ -20, 10, -5 ],
-        [ 20, 10, -5 ],
-        [ 20, -10, -5 ]
-      ]
-    },
-    "type": "polygon"
-  }
-
+    {
+        "material": {
+            "ambientCoefficients": [ 0.4, 0.1, 0.1 ],
+            "diffusionCoefficients": [ 0, 0, 0 ],
+            "phongExponent": 20,
+            "reflectionConstant": 0,
+            "refractionConstant": 1,
+            "refractiveIndex": 5,
+            "specularCoefficients": [ 0, 0, 0 ]
+        },
+        "parameters": {
+            "vertexCount": 4,
+            "coordinates": [
+                [ -20, -10, -5 ],
+                [ -20, 10, -5 ],
+                [ 20, 10, -5 ],
+                [ 20, -10, -5 ]
+            ]
+        },
+        "type": "polygon",
+        "affineTransformation": [
+            [ 1, 0, 0, 0 ],
+            [ 0, 1, 0, 0 ],
+            [ 0, 0, 1, 0 ],
+            [ 0, 0, 0, 1 ]
+        ]
+    }
 ]

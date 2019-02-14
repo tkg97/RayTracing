@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cmath>
+#include <vector>
 using namespace std;
 
 class Vector{
@@ -93,13 +94,35 @@ Vector getSubtractionVector(Point p1, Point p2) {
 	return v;
 }
 
-Point multiplyMatrix(vector<vector<double>> &cameraToWorld, Point p) {
+Point multiplyMatrix(const vector<vector<double>> &matrix, Point p) {
 	// multiply a matrix(4*4) with an augmented point (input in 3d form only) to get the point in the new coordinate system
-	double u1 = p.x*cameraToWorld[0][0] + p.y*cameraToWorld[1][0] + p.z*cameraToWorld[2][0] + cameraToWorld[3][0];
-	double u2 = p.x*cameraToWorld[0][1] + p.y*cameraToWorld[1][1] + p.z*cameraToWorld[2][1] + cameraToWorld[3][1];
-	double u3 = p.x*cameraToWorld[0][2] + p.y*cameraToWorld[1][2] + p.z*cameraToWorld[2][2] + cameraToWorld[3][2];
+	double u1 = p.x*matrix[0][0] + p.y*matrix[1][0] + p.z*matrix[2][0] + 1*matrix[3][0];
+	double u2 = p.x*matrix[0][1] + p.y*matrix[1][1] + p.z*matrix[2][1] + 1*matrix[3][1];
+	double u3 = p.x*matrix[0][2] + p.y*matrix[1][2] + p.z*matrix[2][2] + 1*matrix[3][2];
 	Point r(u1, u2, u3);
 	return r;
+}
+
+Vector multiplyMatrix(const vector<vector<double>> &matrix, Vector v) {
+	// multiply a matrix(4*4) with an augmented direction (input in 3d form only) to get the point in the new coordinate system
+	double u1 = v.i*matrix[0][0] + v.j*matrix[1][0] + v.k*matrix[2][0] + 0 * matrix[3][0];
+	double u2 = v.i*matrix[0][1] + v.j*matrix[1][1] + v.k*matrix[2][1] + 0 * matrix[3][1];
+	double u3 = v.i*matrix[0][2] + v.j*matrix[1][2] + v.k*matrix[2][2] + 0 * matrix[3][2];
+	Vector d(u1, u2, u3);
+	return d;
+}
+
+
+vector < vector<double> > getMatrixInverse(const vector<vector<double>>& matrix) {
+	/*vector< vector<double> > matrixInverse;
+	return matrixInverse;*/
+	return matrix;
+}
+
+vector<vector<double>> getMatrixTranspose(const vector<vector<double>> &matrix) {
+	/*vector<vector<double>> matrixTranspose;
+	return matrixTranspose;*/
+	return matrix;
 }
 
 class Ray{
@@ -131,3 +154,10 @@ class IntersectionPoint{
             return rayParameter;
         }
 };
+
+Ray getTransformedRay(Ray r1, const vector<vector<double> > &matrix) {
+	Point newSource = multiplyMatrix(matrix, r1.getSource());
+	Vector newDirection = multiplyMatrix(matrix, r1.getDirection());
+	Ray r(newSource, newDirection);
+	return r;
+}

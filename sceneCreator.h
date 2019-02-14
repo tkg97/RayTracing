@@ -80,7 +80,9 @@ Scene getSceneObject(){
 				  Point center = parseJsonArrayIntoPoint(centerLocation);
 				  Json::Value materialDetails = itr->get("material", {});
 				  Material objectMaterial = parseJsonIntoMaterial(materialDetails);
-				  objectList.push_back(new Sphere(radius, center, objectMaterial));
+				  Json::Value affineTransformation = itr->get("affineTransformation", {});
+				  vector<vector<double>> transformationMatrix = parseJsonArrayIntoMatrix(affineTransformation);
+				  objectList.push_back(new Sphere(radius, center, objectMaterial, transformationMatrix));
 			  }
 			  else if(typeOfObject == "box"){
 				  Json::Value parameters = itr->get("parameters", {});
@@ -88,7 +90,9 @@ Scene getSceneObject(){
 				  vector<Point> coordinates = parseJsonIntoCoordinates(parameters.get("coordinates", {}), 8 /*number of vertices in box*/);
 				  Json::Value materialDetails = itr->get("material", {});
 				  Material objectMaterial = parseJsonIntoMaterial(materialDetails);
-				  objectList.push_back(new Box(coordinates, objectMaterial));
+				  Json::Value affineTransformation = itr->get("affineTransformation", {});
+				  vector<vector<double>> transformationMatrix = parseJsonArrayIntoMatrix(affineTransformation);
+				  objectList.push_back(new Box(coordinates, objectMaterial, transformationMatrix));
 			  }
 			  else if (typeOfObject == "polygon") {
 				  Json::Value parameters = itr->get("parameters", {});
@@ -98,7 +102,9 @@ Scene getSceneObject(){
 				  vector<Point> coordinates = parseJsonIntoCoordinates(parameters.get("coordinates", {}), vertexCount);
 				  Json::Value materialDetails = itr->get("material", {});
 				  Material objectMaterial = parseJsonIntoMaterial(materialDetails);
-				  objectList.push_back(new Polygon(vertexCount, coordinates, objectMaterial));
+				  Json::Value affineTransformation = itr->get("affineTransformation", {});
+				  vector<vector<double>> transformationMatrix = parseJsonArrayIntoMatrix(affineTransformation);
+				  objectList.push_back(new Polygon(vertexCount, coordinates, objectMaterial, transformationMatrix));
 			  }
 			  else if (typeOfObject == "quadric") {
 				  Json::Value parameters = itr->get("parameters", {});
@@ -115,7 +121,9 @@ Scene getSceneObject(){
 				  double d = parameters.get("d", 0).asDouble();
 				  Json::Value materialDetails = itr->get("material", {});
 				  Material objectMaterial = parseJsonIntoMaterial(materialDetails);
-				  objectList.push_back(new Quadric(a, b, c, f, g, h, p, q, r, d, objectMaterial));
+				  Json::Value affineTransformation = itr->get("affineTransformation", {});
+				  vector<vector<double>> transformationMatrix = parseJsonArrayIntoMatrix(affineTransformation);
+				  objectList.push_back(new Quadric(a, b, c, f, g, h, p, q, r, d, objectMaterial, transformationMatrix));
 			  }
 			  else {
 				  throw exception();
