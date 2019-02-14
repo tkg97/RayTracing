@@ -50,10 +50,8 @@
     <ClInclude Include="json\json.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="lightInput.json" />
-    <None Include="viewerInput.json" />
-    <None Include="objectInput.json" />
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
