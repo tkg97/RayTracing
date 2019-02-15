@@ -7,7 +7,8 @@
             "reflectionConstant": 0,
             "refractionConstant": 0,
             "refractiveIndex": 5,
-            "specularCoefficients": [ 0.1, 0.2, 0.2 ]
+            "specularCoefficients": [ 0.1, 0.2, 0.2 ],
+            "texture": ""
         },
         "parameters": {
             "radius": 3,

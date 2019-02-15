@@ -98,8 +98,8 @@ class Scene{
                     if(shadowParameter!=1){
                         Vector unitLightDirection = getUnitVector(direction); //shadowRay.getDirection()
                         double cosineLightNormal = abs(dotProduct(unitLightDirection,minIntersectionPoint->getNormal()));
-                        vector<double> diffusionIllumination = multiplyVectorDouble(cosineLightNormal,
-                            multiplyVectorsPointwise(objects[objectIndex]->getDiffusionCoefficeint(), lightSources[i].getIntensity()));
+						vector<double> diffusionIllumination = multiplyVectorDouble(cosineLightNormal, 
+							multiplyVectorsPointwise(objects[objectIndex]->getDiffusionCoefficeint(minIntersectionPoint->getLocation()), lightSources[i].getIntensity()));
 						Vector unitViewDirection = multiplyVectorDouble(-1, r.getDirection());
 						double cosineLightView = dotProduct(unitLightDirection, unitViewDirection);
                         double cosineNormalView = abs(dotProduct(minIntersectionPoint->getNormal(), unitViewDirection));

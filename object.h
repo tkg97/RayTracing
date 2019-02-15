@@ -15,9 +15,15 @@ class Material{
         double phongExponent;
         double reflectionConstant;
         double refractionConstant;
+		vector<double> textureImage; // bgr image
+		int imageHeight, imageWidth;
     public:
-        Material(vector<double> a, vector<double> d, vector<double> s, double r, double p, double c1, double c2) : ambientCoefficient(a), diffuseCoefficient(d), specularCoefficient(s),
-                        refractiveIndex(r), phongExponent(p), reflectionConstant(c1), refractionConstant(c2){}
+        Material(vector<double> a, vector<double> d, vector<double> s, double r, double p, double c1, double c2, string texturePath = "") 
+			: ambientCoefficient(a), diffuseCoefficient(d), specularCoefficient(s),
+			refractiveIndex(r), phongExponent(p), reflectionConstant(c1), refractionConstant(c2)
+		{
+			// imageReading code //set imageWidth, imageHeight, textureImage;
+		}
         vector<double> getAmbientCoefficient(){
             return ambientCoefficient;
         }
@@ -27,6 +33,22 @@ class Material{
         vector<double> getSpecularCoefficient(){
             return specularCoefficient;
         }
+		vector<double> getTextureCoefficeint(pair<int,int> imageMapUV) {
+			// p will be provided in coordinate system of object
+			if (!isTextureDefined()) return { 0,0,0 };
+			else {
+				if (imageMapUV.first >= imageHeight || imageMapUV.second >= imageWidth) {
+					return { 0,0,0 };
+				}
+				int r = 3 * (imageMapUV.first)*imageWidth + 3 * (imageMapUV.second)* +2;
+				int g = 3 * (imageMapUV.first)*imageWidth + 3 * (imageMapUV.second)* +1;
+				int b = 3 * (imageMapUV.first)*imageWidth + 3 * (imageMapUV.second)* +0;
+				return { textureImage[r]/255.0, textureImage[g]/255.0, textureImage[b]/255.0 };
+			}
+		}
+		bool isTextureDefined() {
+			return (!(textureImage.size() == 0));
+		}
         double getRefractiveIndex(){
             return refractiveIndex;
         }
@@ -48,6 +70,7 @@ class Object{
 		vector<vector<double>> vertexTransformation;
 		vector<vector<double>> normalTransformation;
 		vector<vector<double>> rayTransformation;
+		virtual pair<int, int> getImageCoordinates(Point p) = 0;
     public:
         Object(Material m, vector<vector<double>> t, bool planar = false) : objectMaterial(m), planarity(planar), vertexTransformation(t)
 		{
@@ -57,7 +80,11 @@ class Object{
         vector<double> getAmbientCoefficient(){
             return objectMaterial.getAmbientCoefficient();
         }
-        vector<double> getDiffusionCoefficeint(){
+        vector<double> getDiffusionCoefficeint(Point p){
+			if (objectMaterial.isTextureDefined()) {
+				pair<int, int> imageMapUV = getImageCoordinates(p);
+				return objectMaterial.getTextureCoefficeint(imageMapUV);
+			}
             return objectMaterial.getDiffusionCoefficeint();
         }
         vector<double> getSpecularCoefficient(){
@@ -200,6 +227,9 @@ class Polygon : public Object {
 	Vector getNormal() {
 		return getUnitVector(multiplyMatrix(getNormalTransformationMatrix(), normal));
 	}
+	pair<int, int> getImageCoordinates(Point p) override {
+		return { 0,0 };
+	}
 
 public:
 	Polygon(int n, vector<Point> v, Material m, vector<vector<double>> t) : Object(m,t,true), vertexCount(n), coordinates(v), normal(0, 0, 0) {
@@ -256,6 +286,10 @@ class Sphere : public Object{
         Vector normal = multiplyMatrix(getNormalTransformationMatrix() ,getSubtractionVector(center, p));
         return getUnitVector(normal);
     }
+
+	pair<int, int> getImageCoordinates(Point p) override {
+		return { 0,0 };
+	}
 
     public:
         Sphere(double rad, Point pt, Material m, vector<vector<double>> t): Object(m,t), radius(rad), center(pt){}
@@ -323,6 +357,10 @@ class Box : public Object{
 		polygonFaces = vector<Polygon>({ p1, p2, p3, p4, p5, p6 });
 	}
     
+	pair<int, int> getImageCoordinates(Point p) override {
+		return { 0,0 };
+	}
+
     public:
         Box(vector<Point> v, Material m, vector<vector<double> > t) : Object(m, t), coordinates(v){
 			storeAllPolygons(m, t);
@@ -367,6 +405,10 @@ class Quadric : public Object{
         Vector normal(i/norm,j/norm,k/norm);
         return getUnitVector(multiplyMatrix(getNormalTransformationMatrix(),normal));
     }
+
+	pair<int, int> getImageCoordinates(Point p) override {
+		return { 0,0 };
+	}
 
     public:
         Quadric(double d1, double d2, double d3, double d4, double d5, double d6, 

@@ -36,7 +36,8 @@ Material parseJsonIntoMaterial(Json::Value &materialData) noexcept(false) {
 		double phongExponent = materialData.get("phongExponent", 1.0).asDouble();
 		double reflectionConstant = materialData.get("reflectionConstant", 0.0).asDouble();
 		double refractionConstant = materialData.get("refractionConstant", 0.0).asDouble();
-		Material m(ambientCoefficients, diffusionCoefficients, specularCoefficients, refractiveIndex, phongExponent, reflectionConstant, refractionConstant);
+		string texturePath = materialData.get("texture", "").asString();
+		Material m(ambientCoefficients, diffusionCoefficients, specularCoefficients, refractiveIndex, phongExponent, reflectionConstant, refractionConstant, texturePath);
 		return m;
 	}
 	else throw exception();
