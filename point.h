@@ -112,17 +112,161 @@ Vector multiplyMatrix(const vector<vector<double>> &matrix, Vector v) {
 	return d;
 }
 
+void getCofactor(vector<vector<double>> A, vector<vector<double>> &temp, int p, int q, int n)
+{
+	int i = 0, j = 0;
+	double** temp1 = new double*[n];
+	for (int k = 0; k < n; k++) {
+		temp1[k] = new double[n];
+	}
+	// Looping for each element of the matrix 
+	for (int row = 0; row < n; row++)
+	{
+		for (int col = 0; col < n; col++)
+		{
+			//  Copying into temporary matrix only those element 
+			//  which are not in given row and column 
+			if (row != p && col != q)
+			{
+				temp1[i][j++] = A[row][col];
+
+				// Row is filled, so increase row index and 
+				// reset col index 
+				if (j == n - 1)
+				{
+					j = 0;
+					i++;
+				}
+			}
+		}
+	}
+	for (int i = 0; i < n; i++) {
+		vector<double> temp2;
+		for (int j = 0; j < n; j++) {
+			temp2.push_back(temp1[i][j]);
+		}
+		temp.push_back(temp2);
+	}
+
+}
+
+double determinant(vector<vector<double>> A, int n)
+{
+	double D = 0; // Initialize result 
+
+	//  Base case : if matrix contains single element 
+	if (n == 1)
+		return A[0][0];
+
+	vector<vector<double>> temp; // To store cofactors 
+
+	int sign = 1;  // To store sign multiplier 
+
+	 // Iterate for each element of first row 
+	for (int f = 0; f < n; f++)
+	{
+		// Getting Cofactor of A[0][f] 
+		getCofactor(A, temp, 0, f, n);
+		D += sign * A[0][f] * determinant(temp, n - 1);
+
+		// terms are to be added with alternate sign 
+		sign = -sign;
+	}
+
+	return D;
+}
+
+// Function to get adjoint of A[N][N] in adj[N][N]. 
+double** adjoint(vector<vector<double>> A)
+{
+
+	int N = A.size();
+	double** adj = new double*[N];
+	for (int i = 0; i < N; i++) {
+		adj[i] = new double[N];
+	}
+	if (N == 1)
+	{
+		adj[0][0] = 1;
+		return adj;
+	}
+
+
+	// temp is used to store cofactors of A[][] 
+	int sign = 1;
+	for (int i = 0; i < N; i++)
+	{
+		for (int j = 0; j < N; j++)
+		{
+			vector<vector<double>> temp;
+			// Get cofactor of A[i][j] 
+			getCofactor(A, temp, i, j, N);
+
+			// sign of adj[j][i] positive if sum of row 
+			// and column indexes is even. 
+			sign = ((i + j) % 2 == 0) ? 1 : -1;
+
+			// Interchanging rows and columns to get the 
+			// transpose of the cofactor matrix 
+			adj[j][i] = (sign)*(determinant(temp, N - 1));
+		}
+	}
+	return adj;
+}
+
+// Function to calculate and store inverse, returns false if 
+// matrix is singular 
+bool inverse(vector<vector<double>> A, vector<vector<double>> &inverse)
+{
+	// Find determinant of A[][] 
+	int N = A.size();
+	double det = determinant(A, N);
+	if (det <= 0.0001 && det >= -0.0001)
+	{
+		cout << "Singular matrix, can't find its inverse";
+		return false;
+	}
+
+	// Find adjoint 
+	double** adj = new double*[N];
+	for (int i = 0; i < N; i++) {
+		adj[i] = new double[N];
+	}
+	adj = adjoint(A);
+
+	// Find Inverse using formula "inverse(A) = adj(A)/det(A)" 
+	for (int i = 0; i < N; i++) {
+		vector<double> temp2;
+		for (int j = 0; j < N; j++) {
+			temp2.push_back(adj[i][j] / det);
+		}
+		inverse.push_back(temp2);
+	}
+	return true;
+}
+
 
 vector < vector<double> > getMatrixInverse(const vector<vector<double>>& matrix) {
-	/*vector< vector<double> > matrixInverse;
-	return matrixInverse;*/
-	return matrix;
+	vector< vector<double> > matrixInverse;
+	if (!inverse(matrix, matrixInverse))
+	{
+		exit(0);
+	}
+	return matrixInverse;
 }
 
 vector<vector<double>> getMatrixTranspose(const vector<vector<double>> &matrix) {
-	/*vector<vector<double>> matrixTranspose;
-	return matrixTranspose;*/
-	return matrix;
+	vector<vector<double>> matrixTranspose;
+	int m = matrix.size();
+	int n = matrix[0].size();
+	for (int i = 0; i < n; i++) {
+		vector<double> temp;
+		for (int j = 0; j < m; j++) {
+			temp.push_back(matrix[j][i]);
+		}
+		matrixTranspose.push_back(temp);
+	}
+	return matrixTranspose;
 }
 
 class Ray{
