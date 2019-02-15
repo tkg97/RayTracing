@@ -305,3 +305,7 @@ Ray getTransformedRay(Ray r1, const vector<vector<double> > &matrix) {
 	Ray r(newSource, newDirection);
 	return r;
 }
+
+vector<vector<double>> formTranslationMatrix(double tx, double ty, double tz) {
+	return { {1, 0, 0, 0}, {0,1,0,0}, {0,0,1,0}, {tx, ty, tz, 1} };
+}

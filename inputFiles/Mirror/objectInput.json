@@ -39,7 +39,8 @@
                 [ -20, -10, -50 ],
                 [ -20, -10, -5 ],
                 [ 20, -10, -5 ]
-            ]
+            ],
+            "center": [ 0, -10, -27.5 ]
         },
         "type": "polygon",
         "affineTransformation": [
@@ -66,7 +67,8 @@
                 [ -20, -10, -5 ],
                 [ -20, 10, -5 ],
                 [ -20, 10, -50 ]
-            ]
+            ],
+            "center": [ -20, 0, -27.5 ]
         },
         "type": "polygon",
         "affineTransformation": [
@@ -93,7 +95,8 @@
                 [ 20, -10, -5 ],
                 [ 20, 10, -5 ],
                 [ 20, 10, -50 ]
-            ]
+            ],
+            "center": [ 20, 0, -27.5 ]
         },
         "type": "polygon",
         "affineTransformation": [
@@ -120,7 +123,8 @@
                 [ 20, -10, -50 ],
                 [ 20, 10, -50 ],
                 [ -20, 10, -50 ]
-            ]
+            ],
+            "center": [ 0, 0, -50 ]
         },
         "type": "polygon",
         "affineTransformation": [
@@ -147,7 +151,8 @@
                 [ 20, 10, -50 ],
                 [ 20, 10, -5 ],
                 [ -20, 10, -5 ]
-            ]
+            ],
+            "center": [ 0, 10, -27.5 ]
         },
         "type": "polygon",
         "affineTransformation": [
@@ -174,7 +179,8 @@
                 [ -20, 10, -5 ],
                 [ 20, 10, -5 ],
                 [ 20, -10, -5 ]
-            ]
+            ],
+            "center": [ 0, 0, -5 ]
         },
         "type": "polygon",
         "affineTransformation": [
