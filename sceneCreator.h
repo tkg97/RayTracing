@@ -142,6 +142,7 @@ Scene getSceneObject(){
     }
 	else {
 		cerr << "object input file couldn't be opened" << endl;
+		cin.get();
 		exit(0);
 	}
 	f.close();

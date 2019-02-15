@@ -22,6 +22,40 @@ class Material{
 			: ambientCoefficient(a), diffuseCoefficient(d), specularCoefficient(s),
 			refractiveIndex(r), phongExponent(p), reflectionConstant(c1), refractionConstant(c2)
 		{
+			unsigned char header[54]; // Each BMP file begins by a 54-bytes header
+			unsigned int dataPos;     // Position in the file where the actual data begins
+			unsigned int width, height;
+			unsigned int imageSize;   // = width*height*3
+			// Actual RGB data
+			unsigned char * data;
+            #pragma warning(suppress : 4996)
+			char* tPath = (char*)texturePath.c_str();
+			FILE * file = fopen(tPath, "rb");
+			if (!file) { printf("Image could not be opened\n"); }
+			if (fread(header, 1, 54, file) != 54) { // If not 54 bytes read : problem
+				printf("Not a correct BMP file\n");
+			}
+			if (header[0] != 'B' || header[1] != 'M') {
+				printf("Not a correct BMP file\n");
+			}
+			dataPos = *(int*)&(header[0x0A]);
+			imageSize = *(int*)&(header[0x22]);
+			width = *(int*)&(header[0x12]);
+			height = *(int*)&(header[0x16]);
+			if (imageSize == 0)    imageSize = width * height * 3; // 3 : one byte for each Red, Green and Blue component
+			if (dataPos == 0)      dataPos = 54;
+			data = new unsigned char[imageSize];
+
+			// Read the actual data from the file into the buffer
+			fread(data, 1, imageSize, file);
+
+			//Everything is in memory now, the file can be closed
+			fclose(file);
+			imageHeight = height;
+			imageWidth = width;
+			for (int i = 0; i < imageSize; i++) {
+				textureImage.push_back( ((int)data[i]) / 255.0);
+			}
 			// imageReading code //set imageWidth, imageHeight, textureImage;
 		}
         vector<double> getAmbientCoefficient(){
@@ -61,6 +95,12 @@ class Material{
         double getRefractionConstant(){
             return refractionConstant;
         }
+		int getImageHeight() {
+			return imageHeight;
+		}
+		int getImageWidth() {
+			return imageWidth;
+		}
 };
 
 class Object{
@@ -113,6 +153,9 @@ class Object{
 		}
 		vector<vector<double>> getRayTransformation() {
 			return rayTransformation;
+		}
+		Material getObjectMaterial() {
+			return objectMaterial;
 		}
         virtual IntersectionPoint* getIntersection(Ray r, double minThreshold) = 0;
         // minThreshold will help me handle the case for t==0 avoidance
@@ -229,6 +272,7 @@ class Polygon : public Object {
 		return getUnitVector(multiplyMatrix(getNormalTransformationMatrix(), normal));
 	}
 	pair<int, int> getImageCoordinates(Point p) override {
+
 		return { 0,0 };
 	}
 
@@ -290,7 +334,12 @@ class Sphere : public Object{
     }
 
 	pair<int, int> getImageCoordinates(Point p) override {
-		return { 0,0 };
+		double theta = atan(-(p.z - center.z) / (p.x - center.x));
+		double phi = acos(-(p.y - center.y) / radius);
+		Material objectMat= getObjectMaterial();
+		int u = (int)(((theta + M_PI) / (2.0) * M_PI)*objectMat.getImageWidth());
+		int v = (int)((phi / M_PI)*objectMat.getImageHeight());
+		return { u,v };
 	}
 
     public:
