@@ -77,9 +77,6 @@ public:
 			int g = 3 * (imageHeight - imageMapUV.second)*imageWidth + 3 * (imageMapUV.first) +1;
 			int r = 3 * (imageHeight - imageMapUV.second)*imageWidth + 3 * (imageMapUV.first) +2;
 			int b = 3 * (imageHeight - imageMapUV.second)*imageWidth + 3 * (imageMapUV.first) +0;
-			double t1 = textureImage[r];
-			double t2 = textureImage[g];
-			double t3 = textureImage[b];
 			return { textureImage[r], textureImage[g], textureImage[b] };
 		}
 	}
