@@ -58,25 +58,28 @@ public:
 			}
 		}
 	}
-	vector<double> getAmbientCoefficient() {
+	vector<double> getAmbientCoefficient(){
 		return ambientCoefficient;
 	}
-	vector<double> getDiffusionCoefficeint() {
+	vector<double> getDiffusionCoefficeint(){
 		return diffuseCoefficient;
 	}
-	vector<double> getSpecularCoefficient() {
+	vector<double> getSpecularCoefficient(){
 		return specularCoefficient;
 	}
-	vector<double> getTextureCoefficeint(pair<int, int> imageMapUV) {
+	vector<double> getTextureCoefficeint(pair<int,int> imageMapUV) {
 		// p will be provided in coordinate system of object
 		if (!isTextureDefined()) return { 0,0,0 };
 		else {
-			if (imageMapUV.first >= imageHeight || imageMapUV.second >= imageWidth) {
+			if (imageMapUV.first >= imageWidth || imageMapUV.second > imageHeight || imageMapUV.second <= 0 || imageMapUV.first < 0) {
 				return { 0,0,0 };
 			}
-			int b = 3 * (imageHeight - imageMapUV.second)*imageWidth + 3 * (imageMapUV.first)* +0;
-			int g = 3 * (imageHeight - imageMapUV.second)*imageWidth + 3 * (imageMapUV.first)* +1;
-			int r = 3 * (imageHeight - imageMapUV.second)*imageWidth + 3 * (imageMapUV.first)* +2;
+			int g = 3 * (imageHeight - imageMapUV.second)*imageWidth + 3 * (imageMapUV.first) +1;
+			int r = 3 * (imageHeight - imageMapUV.second)*imageWidth + 3 * (imageMapUV.first) +2;
+			int b = 3 * (imageHeight - imageMapUV.second)*imageWidth + 3 * (imageMapUV.first) +0;
+			double t1 = textureImage[r];
+			double t2 = textureImage[g];
+			double t3 = textureImage[b];
 			return { textureImage[r], textureImage[g], textureImage[b] };
 		}
 	}
@@ -173,6 +176,11 @@ class Polygon : public Object {
 	vector< Point > coordinates;
 	Vector normal;
 	Point center;
+
+	//only for rectangles and sqaures for texture mapping to find out the parameters of the linear combination
+	vector<vector<double>> inverseCoordMatrix1;
+	vector<vector<double>> inverseCoordMatrix2;
+
 	//returns true if q lies on line segment p-r
 	bool onSegment(Point p, Point q, Point r)
 		// first collinearity has to be checked
@@ -279,8 +287,21 @@ class Polygon : public Object {
 		return getUnitVector(multiplyMatrixVector(getNormalTransformationMatrix(), normal));
 	}
 	pair<int, int> getImageCoordinates(Point p) override {
-
-		return { 0,0 };
+		vector<double> param1 = multiplyMatrix1(getMatrixTranspose(inverseCoordMatrix1), p);
+		vector<double> param2 = multiplyMatrix1(getMatrixTranspose(inverseCoordMatrix2), p);
+		Material objectMat = getObjectMaterial();
+		int u, v;
+		if (param1[0] <= 1.0001 && param1[0] >= -0.0001 && param1[0] <= 1.0001 && param1[1] >= -0.0001 && param1[2] <= 1.0001 && param1[2] >= -0.0001)
+		{
+			u = (int)((param1[1] + param1[2])*objectMat.getImageWidth());
+			v = (int)(param1[2]*objectMat.getImageHeight());
+		}
+		else {
+			 u = (int)((param2[0] )*objectMat.getImageWidth());
+			 v = (int)((param2[0]+param2[1]) * objectMat.getImageHeight());
+		}
+		return { u,v };
+		
 	}
 
 public:
@@ -289,6 +310,16 @@ public:
 		Point p1 = coordinates[0];
 		Point p2 = coordinates[1];
 		Point p3 = coordinates[2];
+
+		//only for 4 point polygon 
+		vector<vector<double>> coord_matrix1 = { {coordinates[0].x,coordinates[1].x,coordinates[2].x},
+							{coordinates[0].y,coordinates[1].y,coordinates[2].y},
+								{coordinates[0].z,coordinates[1].z,coordinates[2].z} };
+		vector<vector<double>> coord_matrix2 = { {coordinates[2].x,coordinates[3].x,coordinates[0].x},
+							{coordinates[2].y,coordinates[3].y,coordinates[0].y},
+								{coordinates[2].z,coordinates[3].z,coordinates[0].z} };
+		inverseCoordMatrix1 = getMatrixInverse(coord_matrix1);
+		inverseCoordMatrix2 = getMatrixInverse(coord_matrix2);
 		normal = crossProduct(p1, p2, p3);
 		vector<vector<double>> translationMat = formTranslationMatrix(center.x, center.y, center.z);
 		setTransformations(t, translationMat);
@@ -343,7 +374,7 @@ class Sphere : public Object {
 	}
 
 	pair<int, int> getImageCoordinates(Point p) override {
-		double theta = atan(-(p.z - center.z) / (p.x - center.x));
+		double theta = atan2(-(p.z - center.z) , (p.x - center.x));
 		double phi = acos(-(p.y - center.y) / radius);
 		Material objectMat = getObjectMaterial();
 		int u = (int)(((theta + M_PI) / ((2.0) * M_PI))*objectMat.getImageWidth());
