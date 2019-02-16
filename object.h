@@ -7,29 +7,29 @@
 #include "point.h"
 using namespace std;
 
-class Material{
-        vector<double> ambientCoefficient;
-        vector<double> diffuseCoefficient;
-        vector<double> specularCoefficient;
-        double refractiveIndex;
-        double phongExponent;
-        double reflectionConstant;
-        double refractionConstant;
-		vector<double> textureImage; // bgr image
-		int imageHeight, imageWidth;
-    public:
-        Material(vector<double> a, vector<double> d, vector<double> s, double r, double p, double c1, double c2, string texturePath = "") 
-			: ambientCoefficient(a), diffuseCoefficient(d), specularCoefficient(s),
-			refractiveIndex(r), phongExponent(p), reflectionConstant(c1), refractionConstant(c2)
-		{
+class Material {
+	vector<double> ambientCoefficient;
+	vector<double> diffuseCoefficient;
+	vector<double> specularCoefficient;
+	double refractiveIndex;
+	double phongExponent;
+	double reflectionConstant;
+	double refractionConstant;
+	vector<double> textureImage; // bgr image
+	int imageHeight, imageWidth;
+public:
+	Material(vector<double> a, vector<double> d, vector<double> s, double r, double p, double c1, double c2, string texturePath = "")
+		: ambientCoefficient(a), diffuseCoefficient(d), specularCoefficient(s),
+		refractiveIndex(r), phongExponent(p), reflectionConstant(c1), refractionConstant(c2)
+	{
+		if (texturePath != "") {
 			unsigned char header[54]; // Each BMP file begins by a 54-bytes header
 			unsigned int dataPos;     // Position in the file where the actual data begins
 			unsigned int width, height;
 			unsigned int imageSize;   // = width*height*3
 			// Actual RGB data
 			unsigned char * data;
-            #pragma warning(suppress : 4996)
-			char* tPath = (char*)texturePath.c_str();
+			const char* tPath = texturePath.c_str();
 			FILE * file = fopen(tPath, "rb");
 			if (!file) { printf("Image could not be opened\n"); }
 			if (fread(header, 1, 54, file) != 54) { // If not 54 bytes read : problem
@@ -54,111 +54,118 @@ class Material{
 			imageHeight = height;
 			imageWidth = width;
 			for (int i = 0; i < imageSize; i++) {
-				textureImage.push_back( ((int)data[i]) / 255.0);
-			}
-			// imageReading code //set imageWidth, imageHeight, textureImage;
-		}
-        vector<double> getAmbientCoefficient(){
-            return ambientCoefficient;
-        }
-        vector<double> getDiffusionCoefficeint(){
-            return diffuseCoefficient;
-        }
-        vector<double> getSpecularCoefficient(){
-            return specularCoefficient;
-        }
-		vector<double> getTextureCoefficeint(pair<int,int> imageMapUV) {
-			// p will be provided in coordinate system of object
-			if (!isTextureDefined()) return { 0,0,0 };
-			else {
-				if (imageMapUV.first >= imageHeight || imageMapUV.second >= imageWidth) {
-					return { 0,0,0 };
-				}
-				int r = 3 * (imageMapUV.first)*imageWidth + 3 * (imageMapUV.second)* +2;
-				int g = 3 * (imageMapUV.first)*imageWidth + 3 * (imageMapUV.second)* +1;
-				int b = 3 * (imageMapUV.first)*imageWidth + 3 * (imageMapUV.second)* +0;
-				return { textureImage[r]/255.0, textureImage[g]/255.0, textureImage[b]/255.0 };
+				textureImage.push_back(((int)data[i]) / 255.0);
 			}
 		}
-		bool isTextureDefined() {
-			return (!(textureImage.size() == 0));
+	}
+	vector<double> getAmbientCoefficient() {
+		return ambientCoefficient;
+	}
+	vector<double> getDiffusionCoefficeint() {
+		return diffuseCoefficient;
+	}
+	vector<double> getSpecularCoefficient() {
+		return specularCoefficient;
+	}
+	vector<double> getTextureCoefficeint(pair<int, int> imageMapUV) {
+		// p will be provided in coordinate system of object
+		if (!isTextureDefined()) return { 0,0,0 };
+		else {
+			if (imageMapUV.first >= imageHeight || imageMapUV.second >= imageWidth) {
+				return { 0,0,0 };
+			}
+			int b = 3 * (imageHeight - imageMapUV.second)*imageWidth + 3 * (imageMapUV.first)* +0;
+			int g = 3 * (imageHeight - imageMapUV.second)*imageWidth + 3 * (imageMapUV.first)* +1;
+			int r = 3 * (imageHeight - imageMapUV.second)*imageWidth + 3 * (imageMapUV.first)* +2;
+			return { textureImage[r], textureImage[g], textureImage[b] };
 		}
-        double getRefractiveIndex(){
-            return refractiveIndex;
-        }
-        double getPhongExponent(){
-            return phongExponent;
-        }
-        double getReflectionConstant(){
-            return reflectionConstant;
-        }
-        double getRefractionConstant(){
-            return refractionConstant;
-        }
-		int getImageHeight() {
-			return imageHeight;
-		}
-		int getImageWidth() {
-			return imageWidth;
-		}
+	}
+	bool isTextureDefined() {
+		return (!(textureImage.size() == 0));
+	}
+	double getRefractiveIndex() {
+		return refractiveIndex;
+	}
+	double getPhongExponent() {
+		return phongExponent;
+	}
+	double getReflectionConstant() {
+		return reflectionConstant;
+	}
+	double getRefractionConstant() {
+		return refractionConstant;
+	}
+	int getImageHeight() {
+		return imageHeight;
+	}
+	int getImageWidth() {
+		return imageWidth;
+	}
 };
 
-class Object{
-    // an abstract parent class for all the objects
-        Material objectMaterial;
-        bool planarity;
-		vector<vector<double>> vertexTransformation;
-		vector<vector<double>> normalTransformation;
-		vector<vector<double>> rayTransformation;
-		virtual pair<int, int> getImageCoordinates(Point p) = 0;
-    public:
-        Object(Material m, vector<vector<double>> t, bool planar = false) : objectMaterial(m), planarity(planar), vertexTransformation(t)
-		{
-			rayTransformation = getMatrixInverse(vertexTransformation);
-			normalTransformation = getMatrixTranspose(rayTransformation);
+class Object {
+	// an abstract parent class for all the objects
+	Material objectMaterial;
+	bool planarity;
+	vector<vector<double>> vertexTransformation;
+	vector<vector<double>> inverseVertexTransformation;
+	vector<vector<double>> normalTransformation;
+	vector<vector<double>> rayTransformation;
+	virtual pair<int, int> getImageCoordinates(Point p) = 0;
+public:
+	Object(Material m, bool planar = false) : objectMaterial(m), planarity(planar) {}
+	vector<double> getAmbientCoefficient() {
+		return objectMaterial.getAmbientCoefficient();
+	}
+	vector<double> getDiffusionCoefficeint(Point p) {
+		if (objectMaterial.isTextureDefined()) {
+			pair<int, int> imageMapUV = getImageCoordinates(p);
+			return objectMaterial.getTextureCoefficeint(imageMapUV);
 		}
-        vector<double> getAmbientCoefficient(){
-            return objectMaterial.getAmbientCoefficient();
-        }
-        vector<double> getDiffusionCoefficeint(Point p){
-			if (objectMaterial.isTextureDefined()) {
-				pair<int, int> imageMapUV = getImageCoordinates(p);
-				return objectMaterial.getTextureCoefficeint(imageMapUV);
-			}
-            return objectMaterial.getDiffusionCoefficeint();
-        }
-        vector<double> getSpecularCoefficient(){
-            return objectMaterial.getSpecularCoefficient();
-        }
-        double getRefractiveIndex(){
-            return objectMaterial.getRefractiveIndex();
-        }
-        double getPhongExponent(){
-            return objectMaterial.getPhongExponent();
-        }
-        double getReflectionConstant(){
-            return objectMaterial.getReflectionConstant();
-        }
-        double getRefractionConstant(){
-            return objectMaterial.getRefractionConstant();
-        }
-        bool isPlanar(){
-            return planarity;
-        }
-		vector<vector<double>> getVertexTransformationMatrix() {
-			return vertexTransformation;
-		}
-		vector<vector<double>> getNormalTransformationMatrix() {
-			return normalTransformation;
-		}
-		vector<vector<double>> getRayTransformation() {
-			return rayTransformation;
-		}
-		Material getObjectMaterial() {
-			return objectMaterial;
-		}
-        virtual IntersectionPoint* getIntersection(Ray r, double minThreshold) = 0;
-        // minThreshold will help me handle the case for t==0 avoidance
+		return objectMaterial.getDiffusionCoefficeint();
+	}
+	vector<double> getSpecularCoefficient() {
+		return objectMaterial.getSpecularCoefficient();
+	}
+	double getRefractiveIndex() {
+		return objectMaterial.getRefractiveIndex();
+	}
+	double getPhongExponent() {
+		return objectMaterial.getPhongExponent();
+	}
+	double getReflectionConstant() {
+		return objectMaterial.getReflectionConstant();
+	}
+	double getRefractionConstant() {
+		return objectMaterial.getRefractionConstant();
+	}
+	bool isPlanar() {
+		return planarity;
+	}
+	vector<vector<double>> getVertexTransformation() {
+		return vertexTransformation;
+	}
+	vector<vector<double>> getInverseVertexTransformationMatrix() {
+		return inverseVertexTransformation;
+	}
+	vector<vector<double>> getNormalTransformationMatrix() {
+		return normalTransformation;
+	}
+	vector<vector<double>> getRayTransformation() {
+		return rayTransformation;
+	}
+	Material getObjectMaterial() {
+		return objectMaterial;
+	}
+	virtual IntersectionPoint* getIntersection(Ray r, double minThreshold) = 0;
+	// minThreshold will help me handle the case for t==0 avoidance
+protected:
+	void setTransformations(const vector<vector<double>> &t, vector<vector<double>> &trans) {
+		rayTransformation = getMatrixInverse(t);
+		vertexTransformation = multiplyMatrices(getMatrixInverse(trans), multiplyMatrices(t, trans));
+		inverseVertexTransformation = multiplyMatrices(getMatrixInverse(trans), multiplyMatrices(rayTransformation, trans));
+		normalTransformation = getMatrixTranspose(rayTransformation);
+	}
 };
 
 class Polygon : public Object {
@@ -168,7 +175,7 @@ class Polygon : public Object {
 	Point center;
 	//returns true if q lies on line segment p-r
 	bool onSegment(Point p, Point q, Point r)
-	// first collinearity has to be checked
+		// first collinearity has to be checked
 	{
 		if (q.x <= max(p.x, r.x) && q.x >= min(p.x, r.x) &&
 			q.y <= max(p.y, r.y) && q.y >= min(p.y, r.y) &&
@@ -198,10 +205,10 @@ class Polygon : public Object {
 		double b3 = q1.z - q2.z;
 		double c1 = q1.x - p0.x, c2 = q1.y - p0.y, c3 = q1.z - p0.z;
 		// t1 and t2 represent the intersection point
-		
+
 		double t1, t2, t3;
 		double r1, r2, r3;
-		
+
 		if (abs(a1*b2 - a2 * b1) >= 0.0001) {
 			t1 = (c1*b2 - b1 * c2) / (a1*b2 - a2 * b1);
 			r1 = (-c1 * a2 + a1 * c2) / (a1*b2 - a2 * b1);
@@ -269,7 +276,7 @@ class Polygon : public Object {
 
 	// return normal to the polygon using 3 corner points
 	Vector getNormal() {
-		return getUnitVector(multiplyMatrix(getNormalTransformationMatrix(), normal));
+		return getUnitVector(multiplyMatrixVector(getNormalTransformationMatrix(), normal));
 	}
 	pair<int, int> getImageCoordinates(Point p) override {
 
@@ -277,17 +284,19 @@ class Polygon : public Object {
 	}
 
 public:
-	Polygon(int n, vector<Point> v, Material m, vector<vector<double>> t, Point c) : 
-		Object(m,t,true), vertexCount(n), coordinates(v), normal(0, 0, 0), center(c) {
+	Polygon(int n, vector<Point> v, Material m, vector<vector<double>> t, Point c) :
+		Object(m, true), vertexCount(n), coordinates(v), normal(0, 0, 0), center(c) {
 		Point p1 = coordinates[0];
 		Point p2 = coordinates[1];
 		Point p3 = coordinates[2];
 		normal = crossProduct(p1, p2, p3);
+		vector<vector<double>> translationMat = formTranslationMatrix(center.x, center.y, center.z);
+		setTransformations(t, translationMat);
 	}
 
 	// get the intersection of ray with the polygon
 	IntersectionPoint* getIntersection(Ray r1, double minThreshold) {
-		r1 = getTransformedRay(r1, getRayTransformation());
+		r1 = getTransformedRay(r1, getInverseVertexTransformationMatrix(), getRayTransformation());
 		Point r0 = r1.getSource();
 		Point p0 = coordinates[0];
 		Vector rd = r1.getDirection();
@@ -302,205 +311,214 @@ public:
 		double t = -(dotProduct(normal, v)) / (dotProduct(normal, rd));
 		if (t < minThreshold) return nullptr;
 
-		Point intersection = addPointVector(r0, multiplyVectorDouble(t, rd));
+		Point intersection = (addPointVector(r0, multiplyVectorDouble(t, rd)));
 		if (isContained(intersection)) {
-			return (new IntersectionPoint(intersection, getNormal(), t));
+			return (new IntersectionPoint(multiplyMatrixVector(getVertexTransformation(), intersection), getNormal(), t));
 		}
 		else
 			return nullptr;
 	}
 };
 
-class Sphere : public Object{
-    double radius;
-    Point center;
+class Sphere : public Object {
+	double radius;
+	Point center;
 
-    double getValueA(double x1, double y1, double z1, double x2, double y2, double z2){
-        return (x2*x2 + y2*y2 + z2*z2);
-    }
+	double getValueA(double x1, double y1, double z1, double x2, double y2, double z2) {
+		return (x2*x2 + y2 * y2 + z2 * z2);
+	}
 
-    double getValueB(double x1, double y1, double z1, double x2, double y2, double z2){
-        return 2*(x1*x2 + y1*y2 + z1*z2 - (center.x)*(x2) - (center.y)*(y2) - (center.z)*(z2));
-    }
+	double getValueB(double x1, double y1, double z1, double x2, double y2, double z2) {
+		return 2 * (x1*x2 + y1 * y2 + z1 * z2 - (center.x)*(x2)-(center.y)*(y2)-(center.z)*(z2));
+	}
 
-    double getValueC(double x1, double y1, double z1, double x2, double y2, double z2){
-        return (x1*x1 + y1*y1 + z1*z1 - (center.x)*(x1+x1) + - (center.y)*(y1+y1) - (center.z)*(z1+z1) + 
-                ((center.x)*(center.x) + (center.y)*(center.y) + (center.z)*(center.z) - radius*radius));
-    }
+	double getValueC(double x1, double y1, double z1, double x2, double y2, double z2) {
+		return (x1*x1 + y1 * y1 + z1 * z1 - (center.x)*(x1 + x1) + -(center.y)*(y1 + y1) - (center.z)*(z1 + z1) +
+			((center.x)*(center.x) + (center.y)*(center.y) + (center.z)*(center.z) - radius * radius));
+	}
 
-    Vector getNormal(Point p){
-        Vector normal = multiplyMatrix(getNormalTransformationMatrix() ,getSubtractionVector(center, p));
-        return getUnitVector(normal);
-    }
+	Vector getNormal(Point p) {
+		Vector normal = multiplyMatrixVector(getNormalTransformationMatrix(), getSubtractionVector(center, p));
+		return getUnitVector(normal);
+	}
 
 	pair<int, int> getImageCoordinates(Point p) override {
 		double theta = atan(-(p.z - center.z) / (p.x - center.x));
 		double phi = acos(-(p.y - center.y) / radius);
-		Material objectMat= getObjectMaterial();
-		int u = (int)(((theta + M_PI) / (2.0) * M_PI)*objectMat.getImageWidth());
+		Material objectMat = getObjectMaterial();
+		int u = (int)(((theta + M_PI) / ((2.0) * M_PI))*objectMat.getImageWidth());
 		int v = (int)((phi / M_PI)*objectMat.getImageHeight());
 		return { u,v };
 	}
 
-    public:
-        Sphere(double rad, Point pt, Material m, vector<vector<double>> t): Object(m,t), radius(rad), center(pt){}
+public:
+	Sphere(double rad, Point pt, Material m, vector<vector<double>> t) : Object(m), radius(rad), center(pt) {
+		vector<vector<double>> translationMat = formTranslationMatrix(center.x, center.y, center.z);
+		setTransformations(t, translationMat);
+	}
 
-        IntersectionPoint* getIntersection(Ray r, double minThreshold){
-			r = getTransformedRay(r, getRayTransformation());
-            Point raySource = r.getSource();
-            Vector rayDirection = r.getDirection();
-            double a = getValueA(raySource.x, raySource.y, raySource.z, rayDirection.i, rayDirection.j, rayDirection.k);
-            double b = getValueB(raySource.x, raySource.y, raySource.z, rayDirection.i, rayDirection.j, rayDirection.k);
-            double c = getValueC(raySource.x, raySource.y, raySource.z, rayDirection.i, rayDirection.j, rayDirection.k);
-            double t;
-            if(abs(a)<=0.00001){
-                t = -c/b;
-            }
-            else{
-                if(b*b - 4*a*c<0) t = -1;
-                else{
-                    double t1 = (-b - sqrt(b*b - 4*a*c))/(2*a);
-                    double t2 = (-b + sqrt(b*b - 4*a*c))/(2*a);
-                    if(t1>=minThreshold && t2>=minThreshold){
-                        t = min(t1, t2);
-                    }
-                    else if(t1>=minThreshold){
-                        t = t1;
-                    }
-                    else if(t2>=minThreshold){
-                        t = t2;
-                    }
-                    else t = -1;
-                }
-            }
-            if(t<minThreshold) return nullptr;
-            else{
-                Point l = (addPointVector(raySource, multiplyVectorDouble(t, rayDirection)));
-                Vector n = getNormal(l);
-                return (new IntersectionPoint(l, n, t));
-            }
-        }
+	IntersectionPoint* getIntersection(Ray r, double minThreshold) {
+		r = getTransformedRay(r, getInverseVertexTransformationMatrix(), getRayTransformation());
+		Point raySource = r.getSource();
+		Vector rayDirection = r.getDirection();
+		double a = getValueA(raySource.x, raySource.y, raySource.z, rayDirection.i, rayDirection.j, rayDirection.k);
+		double b = getValueB(raySource.x, raySource.y, raySource.z, rayDirection.i, rayDirection.j, rayDirection.k);
+		double c = getValueC(raySource.x, raySource.y, raySource.z, rayDirection.i, rayDirection.j, rayDirection.k);
+		double t;
+		if (abs(a) <= 0.00001) {
+			t = -c / b;
+		}
+		else {
+			if (b*b - 4 * a*c < 0) t = -1;
+			else {
+				double t1 = (-b - sqrt(b*b - 4 * a*c)) / (2 * a);
+				double t2 = (-b + sqrt(b*b - 4 * a*c)) / (2 * a);
+				if (t1 >= minThreshold && t2 >= minThreshold) {
+					t = min(t1, t2);
+				}
+				else if (t1 >= minThreshold) {
+					t = t1;
+				}
+				else if (t2 >= minThreshold) {
+					t = t2;
+				}
+				else t = -1;
+			}
+		}
+		if (t < minThreshold) return nullptr;
+		else {
+			Point l = (addPointVector(raySource, multiplyVectorDouble(t, rayDirection)));
+			Vector n = getNormal(l);
+			return (new IntersectionPoint(multiplyMatrixVector(getVertexTransformation(), l), n, t));
+		}
+	}
 };
 
-class Box : public Object{
-    // Assumes a rectilinear box, first four in anticlockwise order, then other four
-    /*
-        2 1 ---- 6 5
-        | |      | |
-        3 4 ---- 7 8
+class Box : public Object {
+	// Assumes a rectilinear box, first four in anticlockwise order, then other four
+	/*
+		2 1 ---- 6 5
+		| |      | |
+		3 4 ---- 7 8
 
-           5
-        1 2 3 4
-           6
-        We will save normals for each surface in this notation
-    */
+		   5
+		1 2 3 4
+		   6
+		We will save normals for each surface in this notation
+	*/
 
-    vector<Point> coordinates;
+	vector<Point> coordinates;
 	vector<Polygon> polygonFaces;
 	Point center;
 
 	void storeAllPolygons(const Material &m, const vector<vector<double>> &t) {
 		Polygon p1(4, { coordinates[0], coordinates[1], coordinates[2], coordinates[3] }, m, t, center);
-		Polygon p2(4, {coordinates[7], coordinates[4], coordinates[0], coordinates[3]}, m, t, center);
-		Polygon p3(4, {coordinates[6], coordinates[5], coordinates[4], coordinates[7]}, m, t, center);
+		Polygon p2(4, { coordinates[7], coordinates[4], coordinates[0], coordinates[3] }, m, t, center);
+		Polygon p3(4, { coordinates[6], coordinates[5], coordinates[4], coordinates[7] }, m, t, center);
 		Polygon p4(4, { coordinates[2], coordinates[1], coordinates[5], coordinates[6] }, m, t, center);
 		Polygon p5(4, { coordinates[5], coordinates[1], coordinates[0], coordinates[4] }, m, t, center);
 		Polygon p6(4, { coordinates[7], coordinates[3], coordinates[2], coordinates[6] }, m, t, center);
 		polygonFaces = vector<Polygon>({ p1, p2, p3, p4, p5, p6 });
 	}
-    
+
 	pair<int, int> getImageCoordinates(Point p) override {
 		return { 0,0 };
 	}
 
-    public:
-        Box(vector<Point> v, Material m, vector<vector<double> > t, Point c) : Object(m, t), coordinates(v), center(c){
-			storeAllPolygons(m, t);
-        }
+public:
+	Box(vector<Point> v, Material m, vector<vector<double> > t, Point c) : Object(m), coordinates(v), center(c) {
+		vector<vector<double>> translationMat = formTranslationMatrix(center.x, center.y, center.z);
+		setTransformations(t, translationMat);
+		storeAllPolygons(m, t);
+	}
 
-		IntersectionPoint* getIntersection(Ray r, double minThreshold) {
-			IntersectionPoint* minIntersectionPoint = nullptr;
-			for (int i = 0;i < 6;i++) {
-				IntersectionPoint* intersection = polygonFaces[i].getIntersection(r, minThreshold);
-				if (intersection != nullptr) {
-					if (minIntersectionPoint == nullptr) minIntersectionPoint = intersection;
-					else if (minIntersectionPoint->getRayParameter() > intersection->getRayParameter()) minIntersectionPoint = intersection;
-				}
+	IntersectionPoint* getIntersection(Ray r, double minThreshold) {
+		IntersectionPoint* minIntersectionPoint = nullptr;
+		for (int i = 0;i < 6;i++) {
+			IntersectionPoint* intersection = polygonFaces[i].getIntersection(r, minThreshold);
+			if (intersection != nullptr) {
+				if (minIntersectionPoint == nullptr) minIntersectionPoint = intersection;
+				else if (minIntersectionPoint->getRayParameter() > intersection->getRayParameter()) minIntersectionPoint = intersection;
 			}
-			return minIntersectionPoint;
 		}
+		return minIntersectionPoint;
+	}
 };
 
-class Quadric : public Object{
-    //  ax^2 + by^2 + cz^2 + 2fyz + 2gzx + 2hxy + 2px + 2qy + 2rz + d = 0.
-    // Assumed to be hollow from inside
-    double a, b, c, f, g, h, p, q, r, d;
+class Quadric : public Object {
+	//  ax^2 + by^2 + cz^2 + 2fyz + 2gzx + 2hxy + 2px + 2qy + 2rz + d = 0.
+	// Assumed to be hollow from inside
+	double a, b, c, f, g, h, p, q, r, d;
 	Point center;
 
-    double getValueA(double x1, double y1, double z1, double x2, double y2, double z2){
-        return (a*x2*x2 + b*y2*y2 + c*z2*z2 + f*(y2*z2 + y2*z2) + g*(z2*x2 + z2*x2) + h*(x2*y2 + x2*y2));
-    }
+	double getValueA(double x1, double y1, double z1, double x2, double y2, double z2) {
+		return (a*x2*x2 + b * y2*y2 + c * z2*z2 + f * (y2*z2 + y2 * z2) + g * (z2*x2 + z2 * x2) + h * (x2*y2 + x2 * y2));
+	}
 
-    double getValueB(double x1, double y1, double z1, double x2, double y2, double z2){
-        return 2*(a*x1*x2 + b*y1*y2 + c*z1*z2 + f*(y1*z2 + y2*z1) + g*(z1*x2 + z2*x1) + h*(x1*y2 + x2*y1) + p*(x2) + q*(y2) + r*(z2));
-    }
+	double getValueB(double x1, double y1, double z1, double x2, double y2, double z2) {
+		return 2 * (a*x1*x2 + b * y1*y2 + c * z1*z2 + f * (y1*z2 + y2 * z1) + g * (z1*x2 + z2 * x1) + h * (x1*y2 + x2 * y1) + p * (x2)+q * (y2)+r * (z2));
+	}
 
-    double getValueC(double x1, double y1, double z1, double x2, double y2, double z2){
-        return (a*x1*x1 + b*y1*y1 + c*z1*z1 + f*(y1*z1 + y1*z1) + g*(z1*x1 + z1*x1) + h*(x1*y1 + x1*y1) + 
-                p*(x1+x1) + q*(y1+y1) + r*(z1+z1) + d);
-    }
+	double getValueC(double x1, double y1, double z1, double x2, double y2, double z2) {
+		return (a*x1*x1 + b * y1*y1 + c * z1*z1 + f * (y1*z1 + y1 * z1) + g * (z1*x1 + z1 * x1) + h * (x1*y1 + x1 * y1) +
+			p * (x1 + x1) + q * (y1 + y1) + r * (z1 + z1) + d);
+	}
 
-    Vector getNormal(Point pt){
-        double i = a*(pt.x) + g*(pt.z) + h*(pt.y) + p; // factor of 2 is removed as normalization will be done
-        double j = b*(pt.y) + f*(pt.z) + h*(pt.x) + q;
-        double k = c*(pt.z) + f*(pt.y) + g*(pt.x) + r;
-        double norm = sqrt(i*i + j*j + k*k);
-        Vector normal(i/norm,j/norm,k/norm);
-        return getUnitVector(multiplyMatrix(getNormalTransformationMatrix(),normal));
-    }
+	Vector getNormal(Point pt) {
+		double i = a * (pt.x) + g * (pt.z) + h * (pt.y) + p; // factor of 2 is removed as normalization will be done
+		double j = b * (pt.y) + f * (pt.z) + h * (pt.x) + q;
+		double k = c * (pt.z) + f * (pt.y) + g * (pt.x) + r;
+		double norm = sqrt(i*i + j * j + k * k);
+		Vector normal(i / norm, j / norm, k / norm);
+		return getUnitVector(multiplyMatrixVector(getNormalTransformationMatrix(), normal));
+	}
 
 	pair<int, int> getImageCoordinates(Point p) override {
 		return { 0,0 };
 	}
 
-    public:
-        Quadric(double d1, double d2, double d3, double d4, double d5, double d6, 
-			double d7, double d8, double d9, double d10, Material m, vector<vector<double> > t, Point c)
-        : Object(m,t),a(d1), b(d2), c(d3), f(d4), g(d5), h(d6), p(d7), q(d8), r(d9), d(d10), center(c){}
+public:
+	Quadric(double d1, double d2, double d3, double d4, double d5, double d6,
+		double d7, double d8, double d9, double d10, Material m, vector<vector<double> > t, Point c)
+		: Object(m), a(d1), b(d2), c(d3), f(d4), g(d5), h(d6), p(d7), q(d8), r(d9), d(d10), center(c)
+	{
+		vector<vector<double>> translationMat = formTranslationMatrix(center.x, center.y, center.z);
+		setTransformations(t, translationMat);
+	}
 
-        IntersectionPoint* getIntersection(Ray r, double minThreshold){
-			r = getTransformedRay(r, getRayTransformation());
-            Point raySource = r.getSource();
-            Vector rayDirection = r.getDirection();
-            double a = getValueA(raySource.x, raySource.y, raySource.z, rayDirection.i, rayDirection.j, rayDirection.k);
-            double b = getValueB(raySource.x, raySource.y, raySource.z, rayDirection.i, rayDirection.j, rayDirection.k);
-            double c = getValueC(raySource.x, raySource.y, raySource.z, rayDirection.i, rayDirection.j, rayDirection.k);
-            double t;
-            if(abs(a)<=0.00001){
-                t = -c/b;
-            }
-            else{
-                if(b*b - 4*a*c<0) t = -1;
-                else{
-                    double t1 = (-b - sqrt(b*b - 4*a*c))/(2*a);
-                    double t2 = (-b + sqrt(b*b - 4*a*c))/(2*a);
-                    if(t1>=minThreshold && t2>=minThreshold){
-                        t = min(t1, t2);
-                    }
-                    else if(t1>=minThreshold){
-                        t = t1;
-                    }
-                    else if(t2>=minThreshold){
-                        t = t2;
-                    }
-                    else t = -1;
-                }
-            }
-            if(t<minThreshold) return nullptr;
-            else{
-                Point l = (addPointVector(raySource, multiplyVectorDouble(t, rayDirection)));
-                Vector n = getNormal(l);
-                return (new IntersectionPoint(l, n, t));
-            }
-        }
+	IntersectionPoint* getIntersection(Ray r, double minThreshold) {
+		r = getTransformedRay(r, getInverseVertexTransformationMatrix(), getRayTransformation());
+		Point raySource = r.getSource();
+		Vector rayDirection = r.getDirection();
+		double a = getValueA(raySource.x, raySource.y, raySource.z, rayDirection.i, rayDirection.j, rayDirection.k);
+		double b = getValueB(raySource.x, raySource.y, raySource.z, rayDirection.i, rayDirection.j, rayDirection.k);
+		double c = getValueC(raySource.x, raySource.y, raySource.z, rayDirection.i, rayDirection.j, rayDirection.k);
+		double t;
+		if (abs(a) <= 0.00001) {
+			t = -c / b;
+		}
+		else {
+			if (b*b - 4 * a*c < 0) t = -1;
+			else {
+				double t1 = (-b - sqrt(b*b - 4 * a*c)) / (2 * a);
+				double t2 = (-b + sqrt(b*b - 4 * a*c)) / (2 * a);
+				if (t1 >= minThreshold && t2 >= minThreshold) {
+					t = min(t1, t2);
+				}
+				else if (t1 >= minThreshold) {
+					t = t1;
+				}
+				else if (t2 >= minThreshold) {
+					t = t2;
+				}
+				else t = -1;
+			}
+		}
+		if (t < minThreshold) return nullptr;
+		else {
+			Point l = (addPointVector(raySource, multiplyVectorDouble(t, rayDirection)));
+			Vector n = getNormal(l);
+			return (new IntersectionPoint(multiplyMatrixVector(getVertexTransformation(), l), n, t));
+		}
+	}
 };

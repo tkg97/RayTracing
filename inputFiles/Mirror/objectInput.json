@@ -7,7 +7,7 @@
             "reflectionConstant": 0,
             "refractionConstant": 0,
             "refractiveIndex": 5,
-            "specularCoefficients": [ 0.1, 0.2, 0.2 ],
+            "specularCoefficients": [ 0.2, 0.2, 0.2 ],
             "texture": ""
         },
         "parameters": {
@@ -16,10 +16,10 @@
         },
         "type": "sphere",
         "affineTransformation": [
-            [ 1, 0, 0, 0 ],
-            [ 0, 1, 0, 0 ],
-            [ 0, 0, 1, 0 ],
-            [ 0, 0, 0, 1 ]
+            [ 1.4, 0, 0, 0 ],
+            [ 0, 1.4, 0, 0 ],
+            [ 0, 0, 1.4, 0 ],
+            [ 0, 7, 0, 1 ]
         ]
     },
     {
@@ -153,34 +153,6 @@
                 [ -20, 10, -5 ]
             ],
             "center": [ 0, 10, -27.5 ]
-        },
-        "type": "polygon",
-        "affineTransformation": [
-            [ 1, 0, 0, 0 ],
-            [ 0, 1, 0, 0 ],
-            [ 0, 0, 1, 0 ],
-            [ 0, 0, 0, 1 ]
-        ]
-    },
-    {
-        "material": {
-            "ambientCoefficients": [ 0.4, 0.1, 0.1 ],
-            "diffusionCoefficients": [ 0, 0, 0 ],
-            "phongExponent": 20,
-            "reflectionConstant": 0,
-            "refractionConstant": 1,
-            "refractiveIndex": 5,
-            "specularCoefficients": [ 0, 0, 0 ]
-        },
-        "parameters": {
-            "vertexCount": 4,
-            "coordinates": [
-                [ -20, -10, -5 ],
-                [ -20, 10, -5 ],
-                [ 20, 10, -5 ],
-                [ 20, -10, -5 ]
-            ],
-            "center": [ 0, 0, -5 ]
         },
         "type": "polygon",
         "affineTransformation": [

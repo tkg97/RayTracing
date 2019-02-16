@@ -12,7 +12,7 @@ class Viewer{
     vector <vector <double> > transformationMatrix;
     public:
         Viewer(double f, int w, int h, vector< vector<double> >m) : angle(f), width(w), height(h), transformationMatrix(m), eyeLocation(0,0,0){
-			eyeLocation = multiplyMatrix(transformationMatrix, eyeLocation);
+			eyeLocation = multiplyMatrixVector(transformationMatrix, eyeLocation);
 		}
         Point getEyeLocation(){
 			return eyeLocation;
@@ -32,7 +32,7 @@ class Viewer{
 
 		Vector getRayDirection(double x, double y) {
 			Point a(x, y, -1);
-			Point b = multiplyMatrix(transformationMatrix, a);
+			Point b = multiplyMatrixVector(transformationMatrix, a);
 			Vector dir = getSubtractionVector(eyeLocation, b);
 			return dir;
 		}

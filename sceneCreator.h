@@ -5,7 +5,6 @@
 #include <fstream>
 #include <vector>
 #include <iostream>
-
 using namespace std;
 
 Point parseJsonArrayIntoPoint(Json::Value& pointLocation) noexcept(false){

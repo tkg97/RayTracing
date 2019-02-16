@@ -94,7 +94,7 @@ Vector getSubtractionVector(Point p1, Point p2) {
 	return v;
 }
 
-Point multiplyMatrix(const vector<vector<double>> &matrix, Point p) {
+Point multiplyMatrixVector(const vector<vector<double>> &matrix, Point p) {
 	// multiply a matrix(4*4) with an augmented point (input in 3d form only) to get the point in the new coordinate system
 	double u1 = p.x*matrix[0][0] + p.y*matrix[1][0] + p.z*matrix[2][0] + 1*matrix[3][0];
 	double u2 = p.x*matrix[0][1] + p.y*matrix[1][1] + p.z*matrix[2][1] + 1*matrix[3][1];
@@ -103,13 +103,34 @@ Point multiplyMatrix(const vector<vector<double>> &matrix, Point p) {
 	return r;
 }
 
-Vector multiplyMatrix(const vector<vector<double>> &matrix, Vector v) {
+Vector multiplyMatrixVector(const vector<vector<double>> &matrix, Vector v) {
 	// multiply a matrix(4*4) with an augmented direction (input in 3d form only) to get the point in the new coordinate system
 	double u1 = v.i*matrix[0][0] + v.j*matrix[1][0] + v.k*matrix[2][0] + 0 * matrix[3][0];
 	double u2 = v.i*matrix[0][1] + v.j*matrix[1][1] + v.k*matrix[2][1] + 0 * matrix[3][1];
 	double u3 = v.i*matrix[0][2] + v.j*matrix[1][2] + v.k*matrix[2][2] + 0 * matrix[3][2];
 	Vector d(u1, u2, u3);
 	return d;
+}
+
+vector<vector<double>> multiplyMatrices(const vector<vector<double>>& mat1, const vector<vector<double>> &mat2) {
+	// both will be 4*4 in our code, but it is written for generic matrix multiplication;
+	// both matrices are assumed to be compatible with each other
+	int len1 = mat1.size();
+	int len2 = mat1[0].size();
+	int len3 = mat2[0].size();
+	vector<vector<double>> resultMat;
+	for (int i = 0;i < len1;i++) {
+		vector<double> temprow;
+		for (int k = 0;k < len3;k++) {
+			double value = 0;
+			for (int j = 0;j < len2;j++) {
+				value += mat1[i][j] * mat2[j][k];
+			}
+			temprow.push_back(value);
+		}
+		resultMat.push_back(temprow);
+	}
+	return resultMat;
 }
 
 void getCofactor(vector<vector<double>> A, vector<vector<double>> &temp, int p, int q, int n)
@@ -158,13 +179,13 @@ double determinant(vector<vector<double>> A, int n)
 	if (n == 1)
 		return A[0][0];
 
-	vector<vector<double>> temp; // To store cofactors 
 
 	int sign = 1;  // To store sign multiplier 
 
 	 // Iterate for each element of first row 
 	for (int f = 0; f < n; f++)
 	{
+		vector<vector<double>> temp; // To store cofactors 
 		// Getting Cofactor of A[0][f] 
 		getCofactor(A, temp, 0, f, n);
 		D += sign * A[0][f] * determinant(temp, n - 1);
@@ -299,9 +320,9 @@ class IntersectionPoint{
         }
 };
 
-Ray getTransformedRay(Ray r1, const vector<vector<double> > &matrix) {
-	Point newSource = multiplyMatrix(matrix, r1.getSource());
-	Vector newDirection = multiplyMatrix(matrix, r1.getDirection());
+Ray getTransformedRay(Ray r1, const vector<vector<double>> &vMat, const vector<vector<double> > &rMat) {
+	Point newSource = multiplyMatrixVector(vMat, r1.getSource());
+	Vector newDirection = multiplyMatrixVector(rMat, r1.getDirection());
 	Ray r(newSource, newDirection);
 	return r;
 }
