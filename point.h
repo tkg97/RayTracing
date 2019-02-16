@@ -103,6 +103,14 @@ Point multiplyMatrix(const vector<vector<double>> &matrix, Point p) {
 	return r;
 }
 
+vector<double> multiplyMatrix1(const vector<vector<double>> &matrix, Point p) {
+	// multiply a matrix(3*3) and a point to get the the paramters of the linear combination
+	double u1 = p.x*matrix[0][0] + p.y*matrix[1][0] + p.z*matrix[2][0] ;
+	double u2 = p.x*matrix[0][1] + p.y*matrix[1][1] + p.z*matrix[2][1] ;
+	double u3 = p.x*matrix[0][2] + p.y*matrix[1][2] + p.z*matrix[2][2] ;
+	vector<double> r = { u1, u2, u3 };
+	return r;
+}
 Vector multiplyMatrix(const vector<vector<double>> &matrix, Vector v) {
 	// multiply a matrix(4*4) with an augmented direction (input in 3d form only) to get the point in the new coordinate system
 	double u1 = v.i*matrix[0][0] + v.j*matrix[1][0] + v.k*matrix[2][0] + 0 * matrix[3][0];
@@ -158,13 +166,14 @@ double determinant(vector<vector<double>> A, int n)
 	if (n == 1)
 		return A[0][0];
 
-	vector<vector<double>> temp; // To store cofactors 
+	 // To store cofactors 
 
 	int sign = 1;  // To store sign multiplier 
 
 	 // Iterate for each element of first row 
 	for (int f = 0; f < n; f++)
 	{
+		vector<vector<double>> temp;
 		// Getting Cofactor of A[0][f] 
 		getCofactor(A, temp, 0, f, n);
 		D += sign * A[0][f] * determinant(temp, n - 1);
