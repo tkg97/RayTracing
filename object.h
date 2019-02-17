@@ -342,7 +342,7 @@ public:
 
 		Point intersection = (addPointVector(r0, multiplyVectorDouble(t, rd)));
 		if (isContained(intersection)) {
-			return (new IntersectionPoint(multiplyMatrixVector(getVertexTransformation(), intersection), getNormal(), t));
+			return (new IntersectionPoint(multiplyMatrixVector(getVertexTransformation(), intersection), getNormal()));
 		}
 		else
 			return nullptr;
@@ -418,7 +418,7 @@ public:
 		else {
 			Point l = (addPointVector(raySource, multiplyVectorDouble(t, rayDirection)));
 			Vector n = getNormal(l);
-			return (new IntersectionPoint(multiplyMatrixVector(getVertexTransformation(), l), n, t));
+			return (new IntersectionPoint(multiplyMatrixVector(getVertexTransformation(), l), n));
 		}
 	}
 };
@@ -463,11 +463,19 @@ public:
 
 	IntersectionPoint* getIntersection(Ray r, double minThreshold) {
 		IntersectionPoint* minIntersectionPoint = nullptr;
+		double minIntersectionParameter = DBL_MAX;
 		for (int i = 0;i < 6;i++) {
 			IntersectionPoint* intersection = polygonFaces[i].getIntersection(r, minThreshold);
 			if (intersection != nullptr) {
-				if (minIntersectionPoint == nullptr) minIntersectionPoint = intersection;
-				else if (minIntersectionPoint->getRayParameter() > intersection->getRayParameter()) minIntersectionPoint = intersection;
+				if (minIntersectionPoint == nullptr) {
+					minIntersectionPoint = intersection;
+					minIntersectionParameter = getNorm(getSubtractionVector(r.getSource(), intersection->getLocation()));
+				}
+				else if (minIntersectionParameter > getNorm(getSubtractionVector(r.getSource(), intersection->getLocation()))) {
+					minIntersectionPoint = intersection;
+					minIntersectionParameter = getNorm(getSubtractionVector(r.getSource(), intersection->getLocation()));
+
+				}
 			}
 		}
 		return minIntersectionPoint;
@@ -547,7 +555,7 @@ public:
 		else {
 			Point l = (addPointVector(raySource, multiplyVectorDouble(t, rayDirection)));
 			Vector n = getNormal(l);
-			return (new IntersectionPoint(multiplyMatrixVector(getVertexTransformation(), l), n, t));
+			return (new IntersectionPoint(multiplyMatrixVector(getVertexTransformation(), l), n));
 		}
 	}
 };

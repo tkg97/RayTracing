@@ -339,17 +339,13 @@ class Ray{
 class IntersectionPoint{
     Point location; // location of the intersection
     Vector normal; // normal at the location of intersection
-    double rayParameter; //p0 + tp1 // tha value of t
     public:
-        IntersectionPoint(Point p, Vector n, double r) : location(p), normal(n), rayParameter(r){}
+        IntersectionPoint(Point p, Vector n) : location(p), normal(n){}
         Point getLocation(){
             return location;
         }
         Vector getNormal(){
             return normal;
-        }
-        double getRayParameter(){
-            return rayParameter;
         }
 };
 

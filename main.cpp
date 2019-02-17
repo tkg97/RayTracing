@@ -44,7 +44,7 @@ int main(){
 	
     savebmp("rayTrace.bmp", w, h, 72, pixels);
 
-	/*cout << "Please enter the pixel for which you want to see the simulation" << endl;
+	cout << "Please enter the pixel for which you want to see the simulation" << endl;
 	cout << "Enter the two integers i and j" << endl;
 	int pixelI, pixelJ;
 	cin >> pixelI >> pixelJ;
@@ -53,6 +53,6 @@ int main(){
 
 	reqDataPixel = sceneObject.getRequiredPixelData(pixelI, pixelJ);
 
-	render(reqDataPixel);*/
+	render(reqDataPixel);
     return 0;
 }

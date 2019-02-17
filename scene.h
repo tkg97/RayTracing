@@ -59,8 +59,8 @@ public:
 				p = objects[i]->getIntersection(r, 0.001); // t=0 intersection is not required
 			}
 			else p = objects[i]->getIntersection(r, 0);
-			if (p != nullptr && p->getRayParameter() < minIntersectionParameter) {
-				minIntersectionParameter = p->getRayParameter();
+			if (p != nullptr && getNorm(getSubtractionVector(r.getSource(), p->getLocation())) < minIntersectionParameter) {
+				minIntersectionParameter = getNorm(getSubtractionVector(r.getSource(), p->getLocation()));
 				minIntersectionPoint = p;
 				objectIndex = i;
 			}
@@ -103,7 +103,7 @@ public:
 					}
 					else p = objects[j]->getIntersection(shadowRay, 0);
 					//TODO : currently shadow parameter is 0/1, update it with heuristic of opaqueness
-					if (p != nullptr && p->getRayParameter() <= lightSourceDistance) {
+					if (p != nullptr && getNorm(getSubtractionVector(r.getSource(), p->getLocation())) <= lightSourceDistance) {
 						shadowParameter = 1;
 						shadowIntersection = p;
 					}
