@@ -57,6 +57,8 @@ Vector multiplyVectorDouble(double a, Vector v) {
 	return v;
 }
 
+
+
 Point addPointVector(Point p, Vector v) {
 	p.x += v.i;
 	p.y += v.j;
@@ -92,6 +94,26 @@ Vector getSubtractionVector(Point p1, Point p2) {
 	double z = p2.z - p1.z;
 	Vector v(x, y, z);
 	return v;
+}
+
+double getNorm(Vector v) {
+	return sqrt(v.i*v.i + v.j*v.j + v.k*v.k);
+}
+double TriangleArea(Point x1, Point x2, Point x3)
+{
+	// Initialize area 
+	double area = 0.0;
+
+	Vector v1 = getSubtractionVector(x2, x1);
+	Vector v2 = getSubtractionVector(x2, x3);
+	// Calculate value of using dot product
+	double ab = getNorm(v1);
+	double ac = getNorm(v2);
+	double cosTheta = dotProduct(v1, v2) / (ab * ac);
+	double sinTheta = sqrt(1 - cosTheta * cosTheta);
+	area = ab * ac* sinTheta;
+	// Return absolute value 
+	return abs(area / 2.0);
 }
 
 Point multiplyMatrixVector(const vector<vector<double>> &matrix, Point p) {
