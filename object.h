@@ -119,6 +119,7 @@ public:
 	}
 	vector<double> getDiffusionCoefficeint(Point p) {
 		if (objectMaterial.isTextureDefined()) {
+			p = multiplyMatrixVector(getInverseVertexTransformationMatrix(),p);
 			pair<int, int> imageMapUV = getImageCoordinates(p);
 			return objectMaterial.getTextureCoefficeint(imageMapUV);
 		}
@@ -505,7 +506,7 @@ class Quadric : public Object {
 		double i = a * (pt.x) + g * (pt.z) + h * (pt.y) + p; // factor of 2 is removed as normalization will be done
 		double j = b * (pt.y) + f * (pt.z) + h * (pt.x) + q;
 		double k = c * (pt.z) + f * (pt.y) + g * (pt.x) + r;
-		double norm = sqrt(i*i + j * j + k * k);
+		double norm = sqrt(i * i + j * j + k * k);
 		Vector normal(i / norm, j / norm, k / norm);
 		return getUnitVector(multiplyMatrixVector(getNormalTransformationMatrix(), normal));
 	}

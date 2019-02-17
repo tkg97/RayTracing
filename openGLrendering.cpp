@@ -57,6 +57,12 @@ int render(const std::vector<float> &rayData)
 
 	// Ensure we can capture the escape key being pressed below
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
+	// Hide the mouse and enable unlimited mouvement
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+	// Set the mouse at the center of the screen
+	glfwPollEvents();
+	glfwSetCursorPos(window, 1024 / 2, 768 / 2);
 
 	// Dark blue background
 	glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
@@ -141,26 +147,59 @@ int render(const std::vector<float> &rayData)
 	glBufferData(GL_ARRAY_BUFFER, normalsPlane.size() * sizeof(glm::vec3), &normalsPlane[0], GL_STATIC_DRAW);
 
 	// VBO for line
+
+	static const GLfloat g_vertex_buffer_data[] = {
+		-1.0f, -1.0f, 0.0f,
+		 1.0f, -1.0f, -3.0f,
+		 1.0f,  1.0f, 0.0f,
+		 -1.0f, -1.0f, 0.0f,
+	};
+
 	GLuint vertexbufferLine;
 	glGenBuffers(1, &vertexbufferLine);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbufferLine);
-	glBufferData(GL_ARRAY_BUFFER, rayData.size() * sizeof(float), &rayData[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
 
 	do{
 
 		// Clear the screen
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		// Now render the lines
+
+		glUseProgram(programIDline);
+		glm::mat4 ProjectionMatrix = glm::perspective<float>(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
+		glm::mat4 ViewMatrix = glm::lookAt(glm::vec3(0, 0, -20), glm::vec3(0, 0, 1), glm::vec3(0, 1, 0));
+		glm::mat4 ModelMatrixLine = glm::mat4(1.0);
+		glm::mat4 MVPline = ProjectionMatrix * ViewMatrix * ModelMatrixLine;
+
+		// Send our transformation to the currently bound shader, 
+		// in the "MVP" uniform
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVPline[0][0]);
+
+		glBindBuffer(GL_ARRAY_BUFFER, vertexbufferLine);
+		glEnableVertexAttribArray(0);
+
+		glVertexAttribPointer(
+			0,                                // attribute
+			3,                                // size
+			GL_FLOAT,                         // type
+			GL_FALSE,                         // normalized?
+			0,                                // stride
+			(void*)0                          // array buffer offset
+		);
+
+		glDrawArrays(GL_LINES, 0, 4);
+
+		glDisableVertexAttribArray(0);
+
 		// Use our shader
 		glUseProgram(programID);
 
 		// render sphere first
-
-		glm::mat4 ProjectionMatrix = glm::perspective<float>(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
-		glm::mat4 ViewMatrix = glm::lookAt(glm::vec3(0,0,-20), glm::vec3(0,0,1), glm::vec3(0,1,0));
 		
 		glm::mat4 ModelMatrixSphere = glm::mat4(1.0);
-		ModelMatrixSphere = glm::translate(ModelMatrixSphere, glm::vec3(3.0f, 0.0f, 5.0f));
+		ModelMatrixSphere = glm::scale(ModelMatrixSphere, glm::vec3(0.5f, 0.5f, 0.5f));
 		glm::mat4 MVPsphere = ProjectionMatrix * ViewMatrix * ModelMatrixSphere;
 
 		// Send our transformation to the currently bound shader, 
@@ -221,10 +260,10 @@ int render(const std::vector<float> &rayData)
 		// now rendering of plane
 
 		glm::mat4 ModelMatrixPlane = glm::mat4(1.0);
-		ModelMatrixPlane = glm::translate(ModelMatrixPlane, glm::vec3(-7.0f, 0.0f, 0.0f));
+		ModelMatrixPlane = glm::translate(ModelMatrixPlane, glm::vec3(-10.0f, 0.0f, 0.0f));
 		ModelMatrixPlane = glm::rotate(ModelMatrixPlane, glm::radians(-45.0f), { 0,1,0 });
 		ModelMatrixPlane = glm::rotate(ModelMatrixPlane, glm::radians(-90.0f), { 1,0,0 });
-		ModelMatrixPlane = glm::scale(ModelMatrixPlane, vec3(0.5f, 0.5f, 0.5f));
+		//ModelMatrixPlane = glm::scale(ModelMatrixPlane, vec3(0.5f, 0.5f, 0.5f));
 		glm::mat4 MVPplane = ProjectionMatrix * ViewMatrix * ModelMatrixPlane;
 
 		// Send our transformation to the currently bound shader, 
@@ -282,30 +321,7 @@ int render(const std::vector<float> &rayData)
 		glDisableVertexAttribArray(1);
 		glDisableVertexAttribArray(2);
 
-		// Now render the lines
-
-		glUseProgram(programIDline);
-
-		glm::mat4 ModelMatrixLine = glm::mat4(1.0);
-		glm::mat4 MVPline = ProjectionMatrix * ViewMatrix * ModelMatrixLine;
-
-		// Send our transformation to the currently bound shader, 
-		// in the "MVP" uniform
-		glUniformMatrix4fv(MatrixIDline, 1, GL_FALSE, &MVPline[0][0]);
-
-		glBindBuffer(GL_ARRAY_BUFFER, vertexbufferLine);
-		glEnableVertexAttribArray(0);
-
-		glVertexAttribPointer(
-			0,                                // attribute
-			3,                                // size
-			GL_FLOAT,                         // type
-			GL_FALSE,                         // normalized?
-			0,                                // stride
-			(void*)0                          // array buffer offset
-		);
-
-		glDrawArrays(GL_LINES, 0, (rayData.size() / 3));
+		
 
 		// Swap buffers
 		glfwSwapBuffers(window);

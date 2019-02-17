@@ -14,19 +14,24 @@ class Viewer{
         Viewer(double f, int w, int h, vector< vector<double> >m) : angle(f), width(w), height(h), transformationMatrix(m), eyeLocation(0,0,0){
 			eyeLocation = multiplyMatrixVector(transformationMatrix, eyeLocation);
 		}
+
         Point getEyeLocation(){
 			return eyeLocation;
         }
-        double getAngle(){
+        
+		double getAngle(){
             return angle;
         }
-        int getWidth(){
+        
+		int getWidth(){
             return width;
         }
-        int getHeight(){
+        
+		int getHeight(){
             return height;
         }
-        vector<vector<double>> getTransformationMatrix(){
+        
+		vector<vector<double>> getTransformationMatrix(){
             return transformationMatrix;
         }
 
