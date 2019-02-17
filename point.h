@@ -112,6 +112,7 @@ vector<double> multiplyMatrix1(const vector<vector<double>> &matrix, Point p) {
 	vector<double> r = { u1, u2, u3 };
 	return r;
 }
+
 Vector multiplyMatrixVector(const vector<vector<double>> &matrix, Vector v) {
 	// multiply a matrix(4*4) with an augmented direction (input in 3d form only) to get the point in the new coordinate system
 	double u1 = v.i*matrix[0][0] + v.j*matrix[1][0] + v.k*matrix[2][0] + 0 * matrix[3][0];
@@ -340,3 +341,10 @@ Ray getTransformedRay(Ray r1, const vector<vector<double>> &vMat, const vector<v
 vector<vector<double>> formTranslationMatrix(double tx, double ty, double tz) {
 	return { {1, 0, 0, 0}, {0,1,0,0}, {0,0,1,0}, {tx, ty, tz, 1} };
 }
+
+struct RayData{
+	int screenI, screenJ;
+	Point start, end;
+
+	RayData(int a, int b, Point p, Point q) : screenI(a), screenJ(b), start(p), end(q) {}
+};
