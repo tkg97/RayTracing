@@ -315,9 +315,13 @@ public:
 		Point p2 = coordinates[1];
 		Point p3 = coordinates[2];
 
-		normal = crossProduct(p1, p2, p3);
+		normal = getUnitVector(crossProduct(p1, p2, p3));
 		vector<vector<double>> translationMat = formTranslationMatrix(center.x, center.y, center.z);
 		setTransformations(t, translationMat);
+
+		Point p11 = multiplyMatrixVector(getVertexTransformation(), p1);
+		Point p22 = multiplyMatrixVector(getVertexTransformation(), p2);
+		Point p33 = multiplyMatrixVector(getVertexTransformation(), p3);
 	}
 
 	// get the intersection of ray with the polygon
@@ -326,7 +330,6 @@ public:
 		Point r0 = r1.getSource();
 		Point p0 = coordinates[0];
 		Vector rd = r1.getDirection();
-		Vector normal = getNormal();
 		double a1 = r0.x - p0.x;
 		double a2 = r0.y - p0.y;
 		double a3 = r0.z - p0.z;

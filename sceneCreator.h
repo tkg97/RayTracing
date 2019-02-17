@@ -63,7 +63,7 @@ vector<vector<double>> parseJsonArrayIntoMatrix(Json::Value &data) noexcept(fals
 Scene getSceneObject(){
 	vector<Object*> objectList;
 	vector<LightSource> lightSourceList;
-    ifstream f("inputFiles/Mirror/objectInput.json");
+    ifstream f("inputFiles/Opengl/objectInput.json");
     Json::Reader reader;
     Json::Value root;
     if(reader.parse(f, root)){
@@ -146,7 +146,7 @@ Scene getSceneObject(){
 	}
 	f.close();
 
-	f.open("inputFiles/Mirror/lightInput.json");
+	f.open("inputFiles/Opengl/lightInput.json");
 	if (reader.parse(f, root)) {
 		Json::Value::iterator itr = root.begin();
 		while (itr != root.end()) {
@@ -163,7 +163,7 @@ Scene getSceneObject(){
 	}
 	f.close();
 
-    f.open("inputFiles/Mirror/viewerInput.json");
+    f.open("inputFiles/Opengl/viewerInput.json");
     if(reader.parse(f,root)){
         int width = root.get("width", 0.0).asInt();
         int height = root.get("height", 0.0).asInt();

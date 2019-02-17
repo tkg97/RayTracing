@@ -10,8 +10,7 @@
 #include "light.h"
 #include "sceneCreator.h"
 #include "bmpImageHandler.h"
-#include <GL\glew.h>
-#include <GLFW/glfw3.h>
+#include "openGLrendering.h"
 using namespace std;
 
 int main(){
@@ -32,60 +31,28 @@ int main(){
 			vector<Ray> rays = sceneObject.getRayFromViewer(i,j);
 			vector<double> temp = { 0,0,0 };
 			for (int k = 0; k < rays.size(); k++) {
-				rgb = sceneObject.getIllumination(rays[k], -1, rdepth);
+				rgb = sceneObject.getIllumination(rays[k], -1, rdepth, j, i);
 				for (int l = 0; l < 3; l++) {
 					temp[l] += rgb[l];
 				}
 			}
-			pixels[j*w + i].r = (temp[0]/5 <= 1) ? temp[0]/5 : 1;
-			pixels[j*w + i].g = (temp[1]/5 <= 1) ? temp[1]/5 : 1;
-			pixels[j*w + i].b = (temp[2]/5 <= 1) ? temp[2]/5 : 1;
+			pixels[j*w + i].r = (temp[0] / rays.size() <= 1) ? temp[0] / rays.size() : 1;
+			pixels[j*w + i].g = (temp[1] / rays.size() <= 1) ? temp[1] / rays.size() : 1;
+			pixels[j*w + i].b = (temp[2] / rays.size() <= 1) ? temp[2] / rays.size() : 1;
         } 
     }
 	
     savebmp("rayTrace.bmp", w, h, 72, pixels);
 
-	//GLFWwindow* window;
+	/*cout << "Please enter the pixel for which you want to see the simulation" << endl;
+	cout << "Enter the two integers i and j" << endl;
+	int pixelI, pixelJ;
+	cin >> pixelI >> pixelJ;
 
-	///* Initialize the library */
-	//if (!glfwInit())
-	//	return -1;
+	vector<float> reqDataPixel;
 
-	///* Create a windowed mode window and its OpenGL context */
-	//window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
-	//
-	//
-	//if (!window)
-	//{
-	//	glfwTerminate();
-	//	return -1;
-	//}
+	reqDataPixel = sceneObject.getRequiredPixelData(pixelI, pixelJ);
 
-	///* Make the window's context current */
-	//glfwMakeContextCurrent(window);
-	//glewInit();
-
-	///* Loop until the user closes the window */
-	//while (!glfwWindowShouldClose(window))
-	//{
-	//	/* Render here */
-	//	glClear(GL_COLOR_BUFFER_BIT);
-
-	//	glBegin(GL_TRIANGLES);
-	//	glVertex2f(-0.5,-0.5);
-	//	glVertex2f(0,0.5);
-	//	glVertex2f(0.5, -0.5);
-	//	glEnd();
-
-	//	/* Swap front and back buffers */
-	//	glfwSwapBuffers(window);
-
-	//	/* Poll for and process events */
-	//	glfwPollEvents();
-	//}
-
-	//glfwTerminate();
-	//return 0;
-
+	render(reqDataPixel);*/
     return 0;
 }
