@@ -174,9 +174,6 @@ class Polygon : public Object {
 	Vector normal;
 	Point center;
 
-	//only for rectangles and sqaures for texture mapping to find out the parameters of the linear combination
-	vector<vector<double>> inverseCoordMatrix1;
-	vector<vector<double>> inverseCoordMatrix2;
 
 	//returns true if q lies on line segment p-r
 	bool onSegment(Point p, Point q, Point r)
@@ -284,11 +281,21 @@ class Polygon : public Object {
 		return getUnitVector(multiplyMatrixVector(getNormalTransformationMatrix(), normal));
 	}
 	pair<int, int> getImageCoordinates(Point p) override {
-		vector<double> param1 = multiplyMatrix1(getMatrixTranspose(inverseCoordMatrix1), p);
-		vector<double> param2 = multiplyMatrix1(getMatrixTranspose(inverseCoordMatrix2), p);
+		double area1 = TriangleArea(p , coordinates[1] , coordinates[2]);
+		double area2 = TriangleArea(p, coordinates[0], coordinates[2]);
+		double area3 = TriangleArea(p, coordinates[1], coordinates[0]);
+		double Area = TriangleArea(coordinates[0], coordinates[1], coordinates[2]);
+
+		double area4 = TriangleArea(p, coordinates[0], coordinates[3]);
+		double area5 = TriangleArea(p, coordinates[0], coordinates[2]);
+		double area6 = TriangleArea(p, coordinates[2], coordinates[3]);
+		double Area1 = TriangleArea(coordinates[0], coordinates[2], coordinates[3]);
+
+		vector<double> param1 = { area1 / Area, area2 / Area , area3 / Area };
+		vector<double> param2 = { area4 / Area1, area5 / Area1 , area6 / Area1 };
 		Material objectMat = getObjectMaterial();
 		int u, v;
-		if (param1[0] <= 1.0001 && param1[0] >= -0.0001 && param1[0] <= 1.0001 && param1[1] >= -0.0001 && param1[2] <= 1.0001 && param1[2] >= -0.0001)
+		if (param1[0] <= 1.0001 && param1[0] >= -0.0001 && param1[0] <= 1.0001 && param1[1] >= -0.0001 && param1[2] <= 1.0001 && param1[2] >= -0.0001 && (param1[0]+param1[1]+param1[2]) <= 1.0001 )
 		{
 			u = (int)((param1[1] + param1[2])*objectMat.getImageWidth());
 			v = (int)(param1[2]*objectMat.getImageHeight());
@@ -308,15 +315,6 @@ public:
 		Point p2 = coordinates[1];
 		Point p3 = coordinates[2];
 
-		//only for 4 point polygon 
-		vector<vector<double>> coord_matrix1 = { {coordinates[0].x,coordinates[1].x,coordinates[2].x},
-							{coordinates[0].y,coordinates[1].y,coordinates[2].y},
-								{coordinates[0].z,coordinates[1].z,coordinates[2].z} };
-		vector<vector<double>> coord_matrix2 = { {coordinates[2].x,coordinates[3].x,coordinates[0].x},
-							{coordinates[2].y,coordinates[3].y,coordinates[0].y},
-								{coordinates[2].z,coordinates[3].z,coordinates[0].z} };
-		inverseCoordMatrix1 = getMatrixInverse(coord_matrix1);
-		inverseCoordMatrix2 = getMatrixInverse(coord_matrix2);
 		normal = crossProduct(p1, p2, p3);
 		vector<vector<double>> translationMat = formTranslationMatrix(center.x, center.y, center.z);
 		setTransformations(t, translationMat);
