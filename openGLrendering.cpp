@@ -4,65 +4,20 @@
 #include <iostream>
 #include <vector>
 
-// Include GLEW
-#include <GL/glew.h>
-
-// Include GLFW
-#include <GLFW/glfw3.h>
-GLFWwindow* window;
-
-// Include GLM
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-using namespace glm;
-
+#include "openGLrendering.h"
 #include "common/shader.hpp"
 #include "common/texture.hpp"
 #include "common/objloader.hpp"
 
 int render(const std::vector<float> &rayData)
 {
-	// Initialise GLFW
-	if( !glfwInit() )
-	{
-		fprintf( stderr, "Failed to initialize GLFW\n" );
-		getchar();
-		return -1;
-	}
-
-	glfwWindowHint(GLFW_SAMPLES, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // To make MacOS happy; should not be needed
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-	// Open a window and create its OpenGL context
-	window = glfwCreateWindow( 1024, 768, "Visualizer", NULL, NULL);
-	if( window == NULL ){
-		fprintf( stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n" );
-		getchar();
-		glfwTerminate();
-		return -1;
-	}
-	glfwMakeContextCurrent(window);
+	//Initialize GLFW;
+	if (initializeGLFW() < 0) exit(-1);
 
 	// Initialize GLEW
-	glewExperimental = true; // Needed for core profile
-	if (glewInit() != GLEW_OK) {
-		fprintf(stderr, "Failed to initialize GLEW\n");
-		getchar();
-		glfwTerminate();
-		return -1;
-	}
+	if (initializeGLEW() < 0) exit(-1);
 
-	// Ensure we can capture the escape key being pressed below
-	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
-	// Hide the mouse and enable unlimited mouvement
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
-	// Set the mouse at the center of the screen
 	glfwPollEvents();
-	glfwSetCursorPos(window, 1024 / 2, 768 / 2);
 
 	// Dark blue background
 	glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
@@ -70,30 +25,31 @@ int render(const std::vector<float> &rayData)
 	// Enable depth test
 	glEnable(GL_DEPTH_TEST);
 	// Accept fragment if it closer to the camera than the former one
-	glDepthFunc(GL_LESS); 
+	glDepthFunc(GL_LESS);
 
 	GLuint VertexArrayID;
 	glGenVertexArrays(1, &VertexArrayID);
 	glBindVertexArray(VertexArrayID);
 
 	// Create and compile our GLSL program from the shaders
-	GLuint programID = LoadShaders( "shaders/VertexShading.shader", "shaders/FragmentShading.shader" );
+	GLuint programID = LoadShaders("shaders/VertexShading.shader", "shaders/FragmentShading.shader");
 	GLuint programIDline = LoadShaders("shaders/LineVertexShader.shader", "shaders/LineFragmentShader.shader");
 
 	// Get a handle for our "MVP" uniform
 	GLuint MatrixID = glGetUniformLocation(programID, "MVP");
-	GLuint MatrixIDline = glGetUniformLocation(programID, "MVP");
+	GLuint MatrixIDline = glGetUniformLocation(programIDline, "MVP");
 	GLuint ViewMatrixID = glGetUniformLocation(programID, "V");
 	GLuint ModelMatrixID = glGetUniformLocation(programID, "M");
+
 	// Get a handle for our "LightPosition" uniform
 	GLuint LightID = glGetUniformLocation(programID, "LightPosition_worldspace");
 
 	// Load the texture
 	GLuint TextureSphere = loadBMP_custom("inputFiles/Opengl/texture_red.bmp");
 	GLuint TexturePlane = loadBMP_custom("inputFiles/Opengl/texture_grey.bmp");
-	
+
 	// Get a handle for our "myTextureSampler" uniform
-	GLuint TextureID  = glGetUniformLocation(programID, "myTextureSampler");
+	GLuint TextureID = glGetUniformLocation(programID, "myTextureSampler");
 
 	// Read our .obj file
 	std::vector<glm::vec3> verticesSphere, verticesPlane;
@@ -101,66 +57,40 @@ int render(const std::vector<float> &rayData)
 	std::vector<glm::vec3> normalsSphere, normalsPlane;
 	bool res = loadOBJ("inputFiles/Opengl/sphere.obj", verticesSphere, uvsSphere, normalsSphere);
 
-	if (!res) {
-		std::cout << "Sphere object file couldn't be loaded" << std::endl;
-		exit(0);
-	}
+	if (!res) exit(-1);
 
 	res = loadOBJ("inputFiles/Opengl/plane.obj", verticesPlane, uvsPlane, normalsPlane);
 
-	if (!res) {
-		std::cout << "Plane object file couldn't be loaded" << std::endl;
-	}
+	if (!res) exit(-1);
 
 	// Load it into a VBO Sphere
 
 	GLuint vertexbufferSphere;
-	glGenBuffers(1, &vertexbufferSphere);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexbufferSphere);
-	glBufferData(GL_ARRAY_BUFFER, verticesSphere.size() * sizeof(glm::vec3), &verticesSphere[0], GL_STATIC_DRAW);
+	setupBuffer(vertexbufferSphere, (verticesSphere.size() * sizeof(glm::vec3)), (&verticesSphere[0]));
 
 	GLuint uvbufferSphere;
-	glGenBuffers(1, &uvbufferSphere);
-	glBindBuffer(GL_ARRAY_BUFFER, uvbufferSphere);
-	glBufferData(GL_ARRAY_BUFFER, uvsSphere.size() * sizeof(glm::vec2), &uvsSphere[0], GL_STATIC_DRAW);
+	setupBuffer(uvbufferSphere, (uvsSphere.size() * sizeof(glm::vec2)), (&uvsSphere[0]));
 
 	GLuint normalbufferSphere;
-	glGenBuffers(1, &normalbufferSphere);
-	glBindBuffer(GL_ARRAY_BUFFER, normalbufferSphere);
-	glBufferData(GL_ARRAY_BUFFER, normalsSphere.size() * sizeof(glm::vec3), &normalsSphere[0], GL_STATIC_DRAW);
+	setupBuffer(normalbufferSphere, (normalsSphere.size() * sizeof(glm::vec3)), (&normalsSphere[0]));
 
 	// Load it into a VBO Plane
 
 	GLuint vertexbufferPlane;
-	glGenBuffers(1, &vertexbufferPlane);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexbufferPlane);
-	glBufferData(GL_ARRAY_BUFFER, verticesSphere.size() * sizeof(glm::vec3), &verticesPlane[0], GL_STATIC_DRAW);
+	setupBuffer(vertexbufferPlane, (verticesPlane.size() * sizeof(glm::vec3)), (&verticesPlane[0]));
 
 	GLuint uvbufferPlane;
-	glGenBuffers(1, &uvbufferPlane);
-	glBindBuffer(GL_ARRAY_BUFFER, uvbufferPlane);
-	glBufferData(GL_ARRAY_BUFFER, uvsPlane.size() * sizeof(glm::vec2), &uvsPlane[0], GL_STATIC_DRAW);
+	setupBuffer(uvbufferPlane, (uvsPlane.size() * sizeof(glm::vec2)), (&uvsPlane[0]));
 
 	GLuint normalbufferPlane;
-	glGenBuffers(1, &normalbufferPlane);
-	glBindBuffer(GL_ARRAY_BUFFER, normalbufferPlane);
-	glBufferData(GL_ARRAY_BUFFER, normalsPlane.size() * sizeof(glm::vec3), &normalsPlane[0], GL_STATIC_DRAW);
+	setupBuffer(normalbufferPlane, (normalsPlane.size() * sizeof(glm::vec3)), (&normalsPlane[0]));
 
 	// VBO for line
 
-	static const GLfloat g_vertex_buffer_data[] = {
-		-1.0f, -1.0f, 0.0f,
-		 1.0f, -1.0f, -3.0f,
-		 1.0f,  1.0f, 0.0f,
-		 -1.0f, -1.0f, 0.0f,
-	};
-
 	GLuint vertexbufferLine;
-	glGenBuffers(1, &vertexbufferLine);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexbufferLine);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
+	setupBuffer(vertexbufferLine, (rayData.size() * sizeof(float)), (&rayData[0]));
 
-	do{
+	do {
 
 		// Clear the screen
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -168,6 +98,7 @@ int render(const std::vector<float> &rayData)
 		// Now render the lines
 
 		glUseProgram(programIDline);
+
 		glm::mat4 ProjectionMatrix = glm::perspective<float>(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
 		glm::mat4 ViewMatrix = glm::lookAt(glm::vec3(0, 0, -20), glm::vec3(0, 0, 1), glm::vec3(0, 1, 0));
 		glm::mat4 ModelMatrixLine = glm::mat4(1.0);
@@ -175,29 +106,20 @@ int render(const std::vector<float> &rayData)
 
 		// Send our transformation to the currently bound shader, 
 		// in the "MVP" uniform
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVPline[0][0]);
+		glUniformMatrix4fv(MatrixIDline, 1, GL_FALSE, &MVPline[0][0]);
 
 		glBindBuffer(GL_ARRAY_BUFFER, vertexbufferLine);
 		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
-		glVertexAttribPointer(
-			0,                                // attribute
-			3,                                // size
-			GL_FLOAT,                         // type
-			GL_FALSE,                         // normalized?
-			0,                                // stride
-			(void*)0                          // array buffer offset
-		);
-
-		glDrawArrays(GL_LINES, 0, 4);
+		glDrawArrays(GL_LINES, 0, (rayData.size() / 3));
 
 		glDisableVertexAttribArray(0);
 
-		// Use our shader
 		glUseProgram(programID);
 
 		// render sphere first
-		
+
 		glm::mat4 ModelMatrixSphere = glm::mat4(1.0);
 		ModelMatrixSphere = glm::scale(ModelMatrixSphere, glm::vec3(0.5f, 0.5f, 0.5f));
 		glm::mat4 MVPsphere = ProjectionMatrix * ViewMatrix * ModelMatrixSphere;
@@ -208,7 +130,7 @@ int render(const std::vector<float> &rayData)
 		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrixSphere[0][0]);
 		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
 
-		glm::vec3 lightPos = glm::vec3(4,4,-4);
+		glm::vec3 lightPos = glm::vec3(0, 0, -8);
 		glUniform3f(LightID, lightPos.x, lightPos.y, lightPos.z);
 
 		// Bind our texture in Texture Unit 0
@@ -220,41 +142,20 @@ int render(const std::vector<float> &rayData)
 		// 1rst attribute buffer : vertices
 		glBindBuffer(GL_ARRAY_BUFFER, vertexbufferSphere);
 		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(
-			0,                  // attribute
-			3,                  // size
-			GL_FLOAT,           // type
-			GL_FALSE,           // normalized?
-			0,                  // stride
-			(void*)0            // array buffer offset
-		);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
 		// 2nd attribute buffer : UVs
 		glBindBuffer(GL_ARRAY_BUFFER, uvbufferSphere);
 		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(
-			1,                                // attribute
-			2,                                // size
-			GL_FLOAT,                         // type
-			GL_FALSE,                         // normalized?
-			0,                                // stride
-			(void*)0                          // array buffer offset
-		);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
 		// 3rd attribute buffer : normals
 		glBindBuffer(GL_ARRAY_BUFFER, normalbufferSphere);
 		glEnableVertexAttribArray(2);
-		glVertexAttribPointer(
-			2,                                // attribute
-			3,                                // size
-			GL_FLOAT,                         // type
-			GL_FALSE,                         // normalized?
-			0,                                // stride
-			(void*)0                          // array buffer offset
-		);
+		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
 		// Draw the triangles !
-		glDrawArrays(GL_TRIANGLES, 0, verticesSphere.size() );
+		glDrawArrays(GL_TRIANGLES, 0, verticesSphere.size());
 
 
 		// now rendering of plane
@@ -263,7 +164,7 @@ int render(const std::vector<float> &rayData)
 		ModelMatrixPlane = glm::translate(ModelMatrixPlane, glm::vec3(-10.0f, 0.0f, 0.0f));
 		ModelMatrixPlane = glm::rotate(ModelMatrixPlane, glm::radians(-45.0f), { 0,1,0 });
 		ModelMatrixPlane = glm::rotate(ModelMatrixPlane, glm::radians(-90.0f), { 1,0,0 });
-		//ModelMatrixPlane = glm::scale(ModelMatrixPlane, vec3(0.5f, 0.5f, 0.5f));
+		ModelMatrixPlane = glm::scale(ModelMatrixPlane, vec3(0.5f, 0.5f, 0.5f));
 		glm::mat4 MVPplane = ProjectionMatrix * ViewMatrix * ModelMatrixPlane;
 
 		// Send our transformation to the currently bound shader, 
@@ -281,55 +182,32 @@ int render(const std::vector<float> &rayData)
 		// 1rst attribute buffer : vertices
 		glBindBuffer(GL_ARRAY_BUFFER, vertexbufferPlane);
 		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(
-			0,                  // attribute
-			3,                  // size
-			GL_FLOAT,           // type
-			GL_FALSE,           // normalized?
-			0,                  // stride
-			(void*)0            // array buffer offset
-		);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
 		// 2nd attribute buffer : UVs
 		glBindBuffer(GL_ARRAY_BUFFER, uvbufferPlane);
 		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(
-			1,                                // attribute
-			2,                                // size
-			GL_FLOAT,                         // type
-			GL_FALSE,                         // normalized?
-			0,                                // stride
-			(void*)0                          // array buffer offset
-		);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
 		// 3rd attribute buffer : normals
 		glBindBuffer(GL_ARRAY_BUFFER, normalbufferPlane);
 		glEnableVertexAttribArray(2);
-		glVertexAttribPointer(
-			2,                                // attribute
-			3,                                // size
-			GL_FLOAT,                         // type
-			GL_FALSE,                         // normalized?
-			0,                                // stride
-			(void*)0                          // array buffer offset
-		);
+		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
 		// Draw the triangles !
-		glDrawArrays(GL_TRIANGLES, 0, verticesPlane.size() );
+		glDrawArrays(GL_TRIANGLES, 0, verticesPlane.size());
 
 		glDisableVertexAttribArray(0);
 		glDisableVertexAttribArray(1);
 		glDisableVertexAttribArray(2);
-
-		
 
 		// Swap buffers
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 
 	} // Check if the ESC key was pressed or the window was closed
-	while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
-		   glfwWindowShouldClose(window) == 0 );
+	while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
+		glfwWindowShouldClose(window) == 0);
 
 	// Cleanup VBO and shader
 	glDeleteBuffers(1, &vertexbufferSphere);

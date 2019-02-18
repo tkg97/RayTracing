@@ -10,8 +10,9 @@
 #include "light.h"
 #include "sceneCreator.h"
 #include "bmpImageHandler.h"
-#include "openGLrendering.h"
 using namespace std;
+
+int render(const std::vector<float>& rayData);
 
 int main(){
     //creating scene
