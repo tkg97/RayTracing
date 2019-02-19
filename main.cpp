@@ -47,13 +47,17 @@ int main(){
 
 	cout << "Please enter the pixel for which you want to see the simulation" << endl;
 	cout << "Enter the two integers i and j" << endl;
-	int pixelI, pixelJ;
-	cin >> pixelI >> pixelJ;
+	cout << "Enter -1 to stop entering the values" << endl;
+	while (1) {
+		int pixelI, pixelJ;
+		cin >> pixelI;
+		if (pixelI == -1) break;
+		cin >> pixelJ;
+		if (pixelJ == -1) break;
 
-	vector<float> reqDataPixel;
-
-	reqDataPixel = sceneObject.getRequiredPixelData(pixelI, pixelJ);
-
-	render(reqDataPixel);
+		vector<float> reqDataPixel;
+		reqDataPixel = sceneObject.getRequiredPixelData(pixelI, pixelJ);
+		render(reqDataPixel);
+	}
     return 0;
 }
