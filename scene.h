@@ -103,7 +103,7 @@ public:
 					}
 					else p = objects[j]->getIntersection(shadowRay, 0);
 					//TODO : currently shadow parameter is 0/1, update it with heuristic of opaqueness
-					if (p != nullptr && getNorm(getSubtractionVector(r.getSource(), p->getLocation())) <= lightSourceDistance) {
+					if (p != nullptr && getNorm(getSubtractionVector(shadowRay.getSource(), p->getLocation())) <= lightSourceDistance) {
 						shadowParameter = 1;
 						shadowIntersection = p;
 					}
