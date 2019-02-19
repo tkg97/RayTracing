@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <float.h>
 #include "point.h"
+#include "matrixAlgebra.h"
 using namespace std;
 
 class Material {
@@ -58,25 +59,25 @@ public:
 			}
 		}
 	}
-	vector<double> getAmbientCoefficient(){
+	vector<double> getAmbientCoefficient() {
 		return ambientCoefficient;
 	}
-	vector<double> getDiffusionCoefficeint(){
+	vector<double> getDiffusionCoefficeint() {
 		return diffuseCoefficient;
 	}
-	vector<double> getSpecularCoefficient(){
+	vector<double> getSpecularCoefficient() {
 		return specularCoefficient;
 	}
-	vector<double> getTextureCoefficeint(pair<int,int> imageMapUV) {
+	vector<double> getTextureCoefficeint(pair<int, int> imageMapUV) {
 		// p will be provided in coordinate system of object
 		if (!isTextureDefined()) return { 0,0,0 };
 		else {
 			if (imageMapUV.first >= imageWidth || imageMapUV.second > imageHeight || imageMapUV.second <= 0 || imageMapUV.first < 0) {
 				return { 0,0,0 };
 			}
-			int g = 3 * (imageHeight - imageMapUV.second)*imageWidth + 3 * (imageMapUV.first) +1;
-			int r = 3 * (imageHeight - imageMapUV.second)*imageWidth + 3 * (imageMapUV.first) +2;
-			int b = 3 * (imageHeight - imageMapUV.second)*imageWidth + 3 * (imageMapUV.first) +0;
+			int g = 3 * (imageHeight - imageMapUV.second)*imageWidth + 3 * (imageMapUV.first) + 1;
+			int r = 3 * (imageHeight - imageMapUV.second)*imageWidth + 3 * (imageMapUV.first) + 2;
+			int b = 3 * (imageHeight - imageMapUV.second)*imageWidth + 3 * (imageMapUV.first) + 0;
 			return { textureImage[r], textureImage[g], textureImage[b] };
 		}
 	}
@@ -119,7 +120,7 @@ public:
 	}
 	vector<double> getDiffusionCoefficeint(Point p) {
 		if (objectMaterial.isTextureDefined()) {
-			p = multiplyMatrixVector(getInverseVertexTransformationMatrix(),p);
+			p = multiplyMatrixVector(getInverseVertexTransformationMatrix(), p);
 			pair<int, int> imageMapUV = getImageCoordinates(p);
 			return objectMaterial.getTextureCoefficeint(imageMapUV);
 		}
@@ -282,7 +283,7 @@ class Polygon : public Object {
 		return getUnitVector(multiplyMatrixVector(getNormalTransformationMatrix(), normal));
 	}
 	pair<int, int> getImageCoordinates(Point p) override {
-		double area1 = TriangleArea(p , coordinates[1] , coordinates[2]);
+		double area1 = TriangleArea(p, coordinates[1], coordinates[2]);
 		double area2 = TriangleArea(p, coordinates[0], coordinates[2]);
 		double area3 = TriangleArea(p, coordinates[1], coordinates[0]);
 		double Area = TriangleArea(coordinates[0], coordinates[1], coordinates[2]);
@@ -296,17 +297,17 @@ class Polygon : public Object {
 		vector<double> param2 = { area4 / Area1, area5 / Area1 , area6 / Area1 };
 		Material objectMat = getObjectMaterial();
 		int u, v;
-		if (param1[0] <= 1.0001 && param1[0] >= -0.0001 && param1[0] <= 1.0001 && param1[1] >= -0.0001 && param1[2] <= 1.0001 && param1[2] >= -0.0001 && (param1[0]+param1[1]+param1[2]) <= 1.0001 )
+		if (param1[0] <= 1.0001 && param1[0] >= -0.0001 && param1[0] <= 1.0001 && param1[1] >= -0.0001 && param1[2] <= 1.0001 && param1[2] >= -0.0001 && (param1[0] + param1[1] + param1[2]) <= 1.0001)
 		{
 			u = (int)((param1[1] + param1[2])*objectMat.getImageWidth());
-			v = (int)(param1[2]*objectMat.getImageHeight());
+			v = (int)(param1[2] * objectMat.getImageHeight());
 		}
 		else {
-			 u = (int)((param2[0] )*objectMat.getImageWidth());
-			 v = (int)((param2[0]+param2[1]) * objectMat.getImageHeight());
+			u = (int)((param2[0])*objectMat.getImageWidth());
+			v = (int)((param2[0] + param2[1]) * objectMat.getImageHeight());
 		}
 		return { u,v };
-		
+
 	}
 
 public:
@@ -319,10 +320,6 @@ public:
 		normal = getUnitVector(crossProduct(p1, p2, p3));
 		vector<vector<double>> translationMat = formTranslationMatrix(center.x, center.y, center.z);
 		setTransformations(t, translationMat);
-
-		Point p11 = multiplyMatrixVector(getVertexTransformation(), p1);
-		Point p22 = multiplyMatrixVector(getVertexTransformation(), p2);
-		Point p33 = multiplyMatrixVector(getVertexTransformation(), p3);
 	}
 
 	// get the intersection of ray with the polygon
@@ -373,7 +370,7 @@ class Sphere : public Object {
 	}
 
 	pair<int, int> getImageCoordinates(Point p) override {
-		double theta = atan2(-(p.z - center.z) , (p.x - center.x));
+		double theta = atan2(-(p.z - center.z), (p.x - center.x));
 		double phi = acos(-(p.y - center.y) / radius);
 		Material objectMat = getObjectMaterial();
 		int u = (int)(((theta + M_PI) / ((2.0) * M_PI))*objectMat.getImageWidth());
@@ -512,6 +509,7 @@ class Quadric : public Object {
 	}
 
 	pair<int, int> getImageCoordinates(Point p) override {
+		// texture is not handled for general quadric
 		return { 0,0 };
 	}
 
