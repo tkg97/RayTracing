@@ -12,7 +12,8 @@
 #include "bmpImageHandler.h"
 using namespace std;
 
-int render(const std::vector<float>& rayData);
+int render(const std::vector<float>& originalRayData, const std::vector<float>& shadowRayData, 
+	const std::vector<float>& reflectedRayData, const std::vector<float>& refractedRayData);
 
 int main(){
     //creating scene
@@ -32,7 +33,10 @@ int main(){
 			vector<Ray> rays = sceneObject.getRayFromViewer(i,j);
 			vector<double> temp = { 0,0,0 };
 			for (int k = 0; k < rays.size(); k++) {
-				rgb = sceneObject.getIllumination(rays[k], -1, rdepth, j, i);
+				if (k == 0) {
+					rgb = sceneObject.getIllumination(rays[k], -1, rdepth, j, i, rayType::Original);
+				}
+				else rgb = sceneObject.getIllumination(rays[k], -1, rdepth, -1, -1, rayType::Original); // so that only one ray is considered for opengl visualisation
 				for (int l = 0; l < 3; l++) {
 					temp[l] += rgb[l];
 				}
@@ -55,9 +59,9 @@ int main(){
 		cin >> pixelJ;
 		if (pixelJ == -1) break;
 
-		vector<float> reqDataPixel;
-		reqDataPixel = sceneObject.getRequiredPixelData(pixelI, pixelJ);
-		render(reqDataPixel);
+		vector<float> originalPixelData, shadowPixelData, reflectedPixelData, refractedPixelData;
+		sceneObject.getRequiredPixelData(pixelI, pixelJ, originalPixelData, shadowPixelData, reflectedPixelData, refractedPixelData);
+		render(originalPixelData, shadowPixelData, reflectedPixelData, refractedPixelData);
 	}
     return 0;
 }

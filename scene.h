@@ -44,7 +44,7 @@ public:
 		return ambientLight;
 	}
 
-	vector<double> getIllumination(Ray& r, int objID, int depth, int sourceI, int sourceJ) {
+	vector<double> getIllumination(Ray& r, int objID, int depth, int sourceI, int sourceJ, rayType rType) {
 		// objID is the index of the object from which the ray is emerged
 		// if depth becomes zero, reflection and transmission is not considered
 		// first check whether this ray intersects with any of the object or not
@@ -66,21 +66,21 @@ public:
 			}
 		}
 		if (minIntersectionPoint == nullptr) {
-			RayData rd(sourceI, sourceJ, r.getSource(), addPointVector(r.getSource(), r.getDirection()));
+			RayData rd(sourceI, sourceJ, r.getSource(), addPointVector(r.getSource(), r.getDirection()), rType);
 			raysData.push_back(rd);
 			vector<double> illumination(3, 0);
 			return illumination;
 		}
 		else {
 			// now we have point of intersection
-			RayData rd(sourceI, sourceJ, r.getSource(), minIntersectionPoint->getLocation());
+			RayData rd(sourceI, sourceJ, r.getSource(), minIntersectionPoint->getLocation(), rType);
 			raysData.push_back(rd);
 			// Let us first check for shadows
 			if (dotProduct(r.getDirection(), minIntersectionPoint->getNormal()) >= 0 && typeid(*(objects[objectIndex])) != typeid(Polygon)) {
 				// means the ray is exiting
 				Vector transmissionDirection = getTransmissionVector(r.getDirection(), minIntersectionPoint->getNormal(), objects[objectIndex]->getRefractiveIndex(), 1);
 				Ray transmissionRay(minIntersectionPoint->getLocation(), transmissionDirection);
-				vector<double> illumination = getIllumination(transmissionRay, objectIndex, depth, sourceI, sourceJ);
+				vector<double> illumination = getIllumination(transmissionRay, objectIndex, depth, sourceI, sourceJ, rayType::Refracted);
 				return illumination;
 			}
 
@@ -95,8 +95,9 @@ public:
 				if ((cosineLightNormal >= 0 && cosineRayNormal >= 0) || (cosineLightNormal <= 0 && cosineRayNormal <= 0)) {
 					shadowParameter = 1;
 				}
+				//TODO: shortest shadow ray thing (will need to remove auto break of loop on finding first intersection)
 				IntersectionPoint *shadowIntersection = nullptr;
-				for (int j = 0; j < objects.size();j++) {
+				for (int j = 0; j < objects.size() && shadowParameter != 1;j++) {
 					IntersectionPoint* p;
 					if (j == objectIndex) {
 						p = objects[j]->getIntersection(shadowRay, 0.001);
@@ -110,7 +111,7 @@ public:
 				}
 				if (shadowParameter != 1) {
 					// There was no collision with any other object
-					RayData rd(sourceI, sourceJ, minIntersectionPoint->getLocation(), lightSources[i].getLocation());
+					RayData rd(sourceI, sourceJ, minIntersectionPoint->getLocation(), lightSources[i].getLocation(), rayType::Shadow);
 					raysData.push_back(rd);
 
 					Vector unitLightDirection = getUnitVector(direction); //shadowRay.getDirection()
@@ -130,7 +131,7 @@ public:
 				}
 				else {
 					if (shadowIntersection != nullptr) {
-						RayData rd(sourceI, sourceJ, minIntersectionPoint->getLocation(), shadowIntersection->getLocation());
+						RayData rd(sourceI, sourceJ, minIntersectionPoint->getLocation(), shadowIntersection->getLocation(), rayType::Shadow);
 						raysData.push_back(rd);
 					}
 				}
@@ -154,7 +155,7 @@ public:
 					reflectionDirection = r.getDirection() + multiplyVectorDouble(-2 * cosineIncidentNormal, minIntersectionPoint->getNormal());
 					Ray reflectionRay(minIntersectionPoint->getLocation(), reflectionDirection);
 
-					vector<double> reflectionIllumination = getIllumination(reflectionRay, objectIndex, depth - 1, sourceI, sourceJ);
+					vector<double> reflectionIllumination = getIllumination(reflectionRay, objectIndex, depth - 1, sourceI, sourceJ, rayType::Reflected);
 					// update total illumination
 					for (int i = 0;i < 3;i++) {
 						illumination[i] += objects[objectIndex]->getReflectionConstant()*reflectionIllumination[i];
@@ -166,7 +167,7 @@ public:
 					if (objects[objectIndex]->isPlanar()) {
 						// if object is planar, than no refraction is considered (case of polygon), simple transmission
 						Ray transmissionRay(minIntersectionPoint->getLocation(), r.getDirection());
-						vector<double> transmissionIllumination = getIllumination(transmissionRay, objectIndex, depth - 1, sourceI, sourceJ);
+						vector<double> transmissionIllumination = getIllumination(transmissionRay, objectIndex, depth - 1, sourceI, sourceJ, rayType::Refracted);
 						// update total illumination
 						for (int i = 0;i < 3;i++) {
 							illumination[i] += objects[objectIndex]->getRefractionConstant()*transmissionIllumination[i];
@@ -175,7 +176,7 @@ public:
 					else {
 						Vector transmissionDirection = getTransmissionVector(r.getDirection(), minIntersectionPoint->getNormal(), 1, objects[objectIndex]->getRefractiveIndex());
 						Ray transmissionRay(minIntersectionPoint->getLocation(), transmissionDirection);
-						vector<double> transmissionIllumination = getIllumination(transmissionRay, objectIndex, depth - 1, sourceI, sourceJ);
+						vector<double> transmissionIllumination = getIllumination(transmissionRay, objectIndex, depth - 1, sourceI, sourceJ, rayType::Refracted);
 						// update total illumination
 						for (int i = 0;i < 3;i++) {
 							illumination[i] += objects[objectIndex]->getRefractionConstant()*transmissionIllumination[i];
@@ -214,37 +215,35 @@ public:
 		double x2 = x - scale / (eye.getHeight()*1.0);
 		double y1 = y + scale / (eye.getHeight()*1.0);
 		double y2 = y - scale / (eye.getHeight()*1.0);
-		Vector dir1 = eye.getRayDirection(x, y);
-		Vector dir2 = eye.getRayDirection(x1, y1);
-		Vector dir3 = eye.getRayDirection(x1, y2);
-		Vector dir4 = eye.getRayDirection(x2, y1);
-		Vector dir5 = eye.getRayDirection(x2, y2);
-		Ray r1(eye.getEyeLocation(), dir1);
-		Ray r2(eye.getEyeLocation(), dir2);
-		Ray r3(eye.getEyeLocation(), dir3);
-		Ray r4(eye.getEyeLocation(), dir4);
-		Ray r5(eye.getEyeLocation(), dir5);
-		vector<Ray> rays;
-		rays.push_back(r1);
-		rays.push_back(r2);
-		rays.push_back(r3);
-		rays.push_back(r4);
-		rays.push_back(r5);
+		Ray r1(eye.getEyeLocation(), eye.getRayDirection(x, y));
+		Ray r2(eye.getEyeLocation(), eye.getRayDirection(x1, y1));
+		Ray r3(eye.getEyeLocation(), eye.getRayDirection(x1, y2));
+		Ray r4(eye.getEyeLocation(), eye.getRayDirection(x2, y1));
+		Ray r5(eye.getEyeLocation(), eye.getRayDirection(x2, y2));
+		vector<Ray> rays({ r1, r2, r3, r4, r5 });
 		return rays;
 	}
 
-	vector<float> getRequiredPixelData(int pixelI, int pixedJ) {
-		vector<float> reqData;
+	void getRequiredPixelData(int pixelI, int pixedJ,
+		vector<float>& originalRayData, vector<float>& shadowRayData, vector<float>& reflectedRayData, vector<float>& refractedRayData) {
 		for (int i = 0;i < raysData.size();i++) {
 			if (raysData[i].screenI == pixelI && raysData[i].screenJ == pixedJ) {
-				reqData.push_back(raysData[i].start.x);
-				reqData.push_back(raysData[i].start.y);
-				reqData.push_back(raysData[i].start.z);
-				reqData.push_back(raysData[i].end.x);
-				reqData.push_back(raysData[i].end.y);
-				reqData.push_back(raysData[i].end.z);
+				vector<double> data({ raysData[i].start.x, raysData[i].start.y, raysData[i].start.z, raysData[i].end.x, raysData[i].end.y, raysData[i].end.z });
+				switch (raysData[i].type) {
+				case rayType::Original:
+					originalRayData.insert(originalRayData.end(), data.begin(), data.end());
+					break;
+				case rayType::Shadow:
+					shadowRayData.insert(shadowRayData.end(), data.begin(), data.end());
+					break;
+				case rayType::Reflected:
+					reflectedRayData.insert(reflectedRayData.end(), data.begin(), data.end());
+					break;
+				case rayType::Refracted:
+					refractedRayData.insert(refractedRayData.end(), data.begin(), data.end());
+					break;
+				}
 			}
 		}
-		return reqData;
 	}
 };

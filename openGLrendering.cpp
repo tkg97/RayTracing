@@ -9,7 +9,8 @@
 #include "common/texture.hpp"
 #include "common/objloader.hpp"
 
-int render(const std::vector<float> &rayData)
+int render(const std::vector<float>& originalRayData, const std::vector<float>& shadowRayData,
+	const std::vector<float>& reflectedRayData, const std::vector<float>& refractedRayData)
 {
 	//Initialize GLFW;
 	if (initializeGLFW() < 0) exit(-1);
@@ -19,8 +20,7 @@ int render(const std::vector<float> &rayData)
 
 	glfwPollEvents();
 
-	// Dark blue background
-	glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
 	// Enable depth test
 	glEnable(GL_DEPTH_TEST);
@@ -43,6 +43,7 @@ int render(const std::vector<float> &rayData)
 
 	// Get a handle for our "LightPosition" uniform
 	GLuint LightID = glGetUniformLocation(programID, "LightPosition_worldspace");
+	GLuint colorID = glGetUniformLocation(programIDline, "in_color");
 
 	// Load the texture
 	GLuint TextureSphere = loadBMP_custom("inputFiles/Opengl/texture_red.bmp");
@@ -85,10 +86,38 @@ int render(const std::vector<float> &rayData)
 	GLuint normalbufferPlane;
 	setupBuffer(normalbufferPlane, (normalsPlane.size() * sizeof(glm::vec3)), (&normalsPlane[0]));
 
-	// VBO for line
+	// VBO for lines
 
-	GLuint vertexbufferLine;
-	setupBuffer(vertexbufferLine, (rayData.size() * sizeof(float)), (&rayData[0]));
+	GLuint vertexbufferLineOriginal;
+	setupBuffer(vertexbufferLineOriginal, (originalRayData.size() * sizeof(float)), (&originalRayData[0]));
+
+	GLuint vertexbufferLineShadow;
+	setupBuffer(vertexbufferLineShadow, (shadowRayData.size() * sizeof(float)), (&shadowRayData[0]));
+
+	GLuint vertexbufferLineReflection;
+	setupBuffer(vertexbufferLineReflection, (reflectedRayData.size() * sizeof(float)), (&reflectedRayData[0]));
+
+	GLuint vertexbufferLineRefraction;
+	setupBuffer(vertexbufferLineRefraction, (refractedRayData.size() * sizeof(float)), (&refractedRayData[0]));
+
+	glm::mat4 ProjectionMatrix = glm::perspective<float>(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
+	glm::mat4 ViewMatrix = glm::lookAt(glm::vec3(0, 20, 0), glm::vec3(0, -1, 0), glm::vec3(-1, 0, 0));
+
+	glm::mat4 ModelMatrixLine = glm::mat4(1.0);
+	glm::mat4 MVPline = ProjectionMatrix * ViewMatrix * ModelMatrixLine;
+
+	glm::mat4 ModelMatrixSphere = glm::mat4(1.0);
+	ModelMatrixSphere = glm::scale(ModelMatrixSphere, glm::vec3(0.5f, 0.5f, 0.5f));
+	glm::mat4 MVPsphere = ProjectionMatrix * ViewMatrix * ModelMatrixSphere;
+
+	glm::mat4 ModelMatrixPlane = glm::mat4(1.0);
+	ModelMatrixPlane = glm::translate(ModelMatrixPlane, glm::vec3(-10.0f, 0.0f, 0.0f));
+	ModelMatrixPlane = glm::rotate(ModelMatrixPlane, glm::radians(-45.0f), { 0,1,0 });
+	ModelMatrixPlane = glm::rotate(ModelMatrixPlane, glm::radians(-90.0f), { 1,0,0 });
+	ModelMatrixPlane = glm::scale(ModelMatrixPlane, vec3(0.5f, 0.5f, 0.5f));
+	glm::mat4 MVPplane = ProjectionMatrix * ViewMatrix * ModelMatrixPlane;
+
+	glm::vec3 lightPos = glm::vec3(0, 0, -8);
 
 	do {
 
@@ -99,30 +128,43 @@ int render(const std::vector<float> &rayData)
 
 		glUseProgram(programIDline);
 
-		glm::mat4 ProjectionMatrix = glm::perspective<float>(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
-		glm::mat4 ViewMatrix = glm::lookAt(glm::vec3(0, 0, -20), glm::vec3(0, 0, 1), glm::vec3(0, 1, 0));
-		glm::mat4 ModelMatrixLine = glm::mat4(1.0);
-		glm::mat4 MVPline = ProjectionMatrix * ViewMatrix * ModelMatrixLine;
 
 		// Send our transformation to the currently bound shader, 
 		// in the "MVP" uniform
 		glUniformMatrix4fv(MatrixIDline, 1, GL_FALSE, &MVPline[0][0]);
 
-		glBindBuffer(GL_ARRAY_BUFFER, vertexbufferLine);
+		glUniform3f(colorID, 1.0f, 0.0f, 0.0f);
+		glBindBuffer(GL_ARRAY_BUFFER, vertexbufferLineOriginal);
 		glEnableVertexAttribArray(0);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+		glDrawArrays(GL_LINES, 0, (originalRayData.size() / 3));
+		glDisableVertexAttribArray(0);
 
-		glDrawArrays(GL_LINES, 0, (rayData.size() / 3));
+		glUniform3f(colorID, 1.0f, 1.0f, 1.0f);
+		glBindBuffer(GL_ARRAY_BUFFER, vertexbufferLineShadow);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+		glDrawArrays(GL_LINES, 0, (shadowRayData.size() / 3));
+		glDisableVertexAttribArray(0);
 
+		glUniform3f(colorID, 0.0f, 1.0f, 0.0f);
+		glBindBuffer(GL_ARRAY_BUFFER, vertexbufferLineReflection);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+		glDrawArrays(GL_LINES, 0, (reflectedRayData.size() / 3));
+		glDisableVertexAttribArray(0);
+
+		glUniform3f(colorID, 0.0f, 0.0f, 1.0f);
+		glBindBuffer(GL_ARRAY_BUFFER, vertexbufferLineRefraction);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+		glDrawArrays(GL_LINES, 0, (refractedRayData.size() / 3));
 		glDisableVertexAttribArray(0);
 
 		glUseProgram(programID);
 
 		// render sphere first
 
-		glm::mat4 ModelMatrixSphere = glm::mat4(1.0);
-		ModelMatrixSphere = glm::scale(ModelMatrixSphere, glm::vec3(0.5f, 0.5f, 0.5f));
-		glm::mat4 MVPsphere = ProjectionMatrix * ViewMatrix * ModelMatrixSphere;
 
 		// Send our transformation to the currently bound shader, 
 		// in the "MVP" uniform
@@ -130,7 +172,6 @@ int render(const std::vector<float> &rayData)
 		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrixSphere[0][0]);
 		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
 
-		glm::vec3 lightPos = glm::vec3(0, 0, -8);
 		glUniform3f(LightID, lightPos.x, lightPos.y, lightPos.z);
 
 		// Bind our texture in Texture Unit 0
@@ -157,15 +198,7 @@ int render(const std::vector<float> &rayData)
 		// Draw the triangles !
 		glDrawArrays(GL_TRIANGLES, 0, verticesSphere.size());
 
-
 		// now rendering of plane
-
-		glm::mat4 ModelMatrixPlane = glm::mat4(1.0);
-		ModelMatrixPlane = glm::translate(ModelMatrixPlane, glm::vec3(-10.0f, 0.0f, 0.0f));
-		ModelMatrixPlane = glm::rotate(ModelMatrixPlane, glm::radians(-45.0f), { 0,1,0 });
-		ModelMatrixPlane = glm::rotate(ModelMatrixPlane, glm::radians(-90.0f), { 1,0,0 });
-		ModelMatrixPlane = glm::scale(ModelMatrixPlane, vec3(0.5f, 0.5f, 0.5f));
-		glm::mat4 MVPplane = ProjectionMatrix * ViewMatrix * ModelMatrixPlane;
 
 		// Send our transformation to the currently bound shader, 
 		// in the "MVP" uniform
@@ -216,7 +249,10 @@ int render(const std::vector<float> &rayData)
 	glDeleteBuffers(1, &vertexbufferPlane);
 	glDeleteBuffers(1, &uvbufferPlane);
 	glDeleteBuffers(1, &normalbufferPlane);
-	glDeleteBuffers(1, &vertexbufferLine);
+	glDeleteBuffers(1, &vertexbufferLineOriginal);
+	glDeleteBuffers(1, &vertexbufferLineShadow);
+	glDeleteBuffers(1, &vertexbufferLineReflection);
+	glDeleteBuffers(1, &vertexbufferLineRefraction);
 	glDeleteProgram(programIDline);
 	glDeleteProgram(programID);
 	glDeleteTextures(1, &TextureSphere);

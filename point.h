@@ -124,9 +124,14 @@ class IntersectionPoint{
         }
 };
 
+enum rayType {
+	Original, Shadow, Reflected, Refracted
+};
+
 struct RayData{
 	int screenI, screenJ;
 	Point start, end;
+	rayType type;
 
-	RayData(int a, int b, Point p, Point q) : screenI(a), screenJ(b), start(p), end(q) {}
+	RayData(int a, int b, Point p, Point q, rayType t) : screenI(a), screenJ(b), start(p), end(q), type(t) {}
 };

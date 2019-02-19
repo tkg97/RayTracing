@@ -3,10 +3,9 @@
 // Ouput data
 out vec3 color;
 
+uniform vec3 in_color;
+
 void main()
-{
-
-	// Output color = red 
-	color = vec3(1,0,0);
-
+{ 
+	color = in_color;
 }
