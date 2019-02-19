@@ -47,7 +47,7 @@ int main(){
         } 
     }
 	
-    savebmp("rayTrace.bmp", w, h, 72, pixels);
+    savebmp("inputFiles/Opengl/rayTrace.bmp", w, h, 72, pixels);
 
 	cout << "Please enter the pixel for which you want to see the simulation" << endl;
 	cout << "Enter the two integers i and j" << endl;
