@@ -1,3 +1,4 @@
+// code referenced from opengl-tutorial.org
 #ifndef TEXTURE_HPP
 #define TEXTURE_HPP
 

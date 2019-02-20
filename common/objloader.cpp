@@ -1,3 +1,4 @@
+// code referenced from opengl-tutorial.org
 #include <vector>
 #include <stdio.h>
 #include <string>
@@ -6,16 +7,6 @@
 #include <glm/glm.hpp>
 
 #include "objloader.hpp"
-
-// Very, VERY simple OBJ loader.
-// Here is a short list of features a real function would provide : 
-// - Binary files. Reading a model should be just a few memcpy's away, not parsing a file at runtime. In short : OBJ is not very great.
-// - Animations & bones (includes bones weights)
-// - Multiple UVs
-// - All attributes should be optional, not "forced"
-// - More stable. Change a line in the OBJ file and it crashes.
-// - More secure. Change another line and you can inject code.
-// - Loading from memory, stream, etc
 
 bool loadOBJ(
 	const char * path, 

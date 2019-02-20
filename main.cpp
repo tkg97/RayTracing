@@ -59,6 +59,12 @@ int main(){
 		cin >> pixelJ;
 		if (pixelJ == -1) break;
 
+		if (cin.fail()) {
+			cin.clear();
+			cin.ignore();
+			cout << "wrong input, please try again" << endl;
+			continue;
+		}
 		vector<float> originalPixelData, shadowPixelData, reflectedPixelData, refractedPixelData;
 		sceneObject.getRequiredPixelData(pixelI, pixelJ, originalPixelData, shadowPixelData, reflectedPixelData, refractedPixelData);
 		render(originalPixelData, shadowPixelData, reflectedPixelData, refractedPixelData);

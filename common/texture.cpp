@@ -1,3 +1,4 @@
+// code referenced from opengl-tutorial.org
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
