@@ -8,6 +8,7 @@
 #include "common/shader.hpp"
 #include "common/texture.hpp"
 #include "common/objloader.hpp"
+#include "common/controls.hpp"
 
 int render(const std::vector<float>& originalRayData, const std::vector<float>& shadowRayData,
 	const std::vector<float>& reflectedRayData, const std::vector<float>& refractedRayData)
@@ -18,7 +19,14 @@ int render(const std::vector<float>& originalRayData, const std::vector<float>& 
 	// Initialize GLEW
 	if (initializeGLEW() < 0) exit(-1);
 
+	// Ensure we can capture the escape key being pressed below
+	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
+	// Hide the mouse and enable unlimited mouvement
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+	// Set the mouse at the center of the screen
 	glfwPollEvents();
+	glfwSetCursorPos(window, 1024 / 2, 768 / 2);
 
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
@@ -26,6 +34,8 @@ int render(const std::vector<float>& originalRayData, const std::vector<float>& 
 	glEnable(GL_DEPTH_TEST);
 	// Accept fragment if it closer to the camera than the former one
 	glDepthFunc(GL_LESS);
+
+	resetControls();
 
 	GLuint VertexArrayID;
 	glGenVertexArrays(1, &VertexArrayID);
@@ -66,7 +76,6 @@ int render(const std::vector<float>& originalRayData, const std::vector<float>& 
 
 	if (!res) exit(-1);
 
-
 	res = loadOBJ("inputFiles/Opengl/planewindow.obj", verticesViewPlane, uvsViewPlane, normalsViewPlane);
 
 	if (!res) exit(-1);
@@ -105,6 +114,7 @@ int render(const std::vector<float>& originalRayData, const std::vector<float>& 
 	GLuint normalbufferViewPlane;
 	setupBuffer(normalbufferViewPlane, (normalsViewPlane.size() * sizeof(glm::vec3)), (&normalsViewPlane[0]));
 
+	
 	// VBO for lines
 
 	GLuint vertexbufferLineOriginal;
@@ -119,56 +129,63 @@ int render(const std::vector<float>& originalRayData, const std::vector<float>& 
 	GLuint vertexbufferLineRefraction;
 	setupBuffer(vertexbufferLineRefraction, (refractedRayData.size() * sizeof(float)), (&refractedRayData[0]));
 
-	glm::mat4 ProjectionMatrix = glm::perspective<float>(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
-	glm::mat4 ViewMatrix = glm::lookAt(glm::vec3(2, 10, -10), glm::vec3(2, 0, 0), glm::vec3(0, 1/sqrt(2), 1/sqrt(2)));
-	//ViewMatrix = glm::rotate(ViewMatrix , glm::radians(45.0f), { 1,0,0 });
-
-	glm::mat4 ModelMatrixLine = glm::mat4(1.0);
-	glm::mat4 MVPline = ProjectionMatrix * ViewMatrix * ModelMatrixLine;
-
-	glm::mat4 ModelMatrixSphere = glm::mat4(1.0);
-	ModelMatrixSphere = glm::scale(ModelMatrixSphere, glm::vec3(0.5f, 0.5f, 0.5f));
-	glm::mat4 MVPsphere = ProjectionMatrix * ViewMatrix * ModelMatrixSphere;
-
-	//for light source 1
-	glm::mat4 ModelMatrixLight1 = glm::mat4(1.0);
-	ModelMatrixLight1 = glm::translate(ModelMatrixLight1, glm::vec3(0.0f, 0.0f, -4.3f));
-	ModelMatrixLight1 = glm::scale(ModelMatrixLight1, glm::vec3(0.05f, 0.05f, 0.05f));
-	glm::mat4 MVPLight1 = ProjectionMatrix * ViewMatrix * ModelMatrixLight1;
-
-	//for light source 2
-	glm::mat4 ModelMatrixLight2 = glm::mat4(1.0);
-	ModelMatrixLight2 = glm::translate(ModelMatrixLight2, glm::vec3(2.8f, 3.0f, -2.5f));
-	ModelMatrixLight2 = glm::scale(ModelMatrixLight2, glm::vec3(0.05f, 0.05f, 0.05f));
-	glm::mat4 MVPLight2 = ProjectionMatrix * ViewMatrix * ModelMatrixLight2;
-
-	glm::mat4 ModelMatrixPlane = glm::mat4(1.0);
-	ModelMatrixPlane = glm::translate(ModelMatrixPlane, glm::vec3(-3.5f, 0.0f, 0.0f));
-	ModelMatrixPlane = glm::rotate(ModelMatrixPlane, glm::radians(-90.0f), { 1,0,0 });
-	ModelMatrixPlane = glm::rotate(ModelMatrixPlane, glm::radians(-90.0f), { 0,0,1 });
-	ModelMatrixPlane = glm::scale(ModelMatrixPlane, vec3(0.5f, 0.5f, 0.5f));
-	glm::mat4 MVPplane = ProjectionMatrix * ViewMatrix * ModelMatrixPlane;
-
-	glm::mat4 ModelMatrixPlane2 = glm::mat4(1.0);
-	ModelMatrixPlane2 = glm::translate(ModelMatrixPlane2, glm::vec3(0.0f, 0.0f, 3.5f));
-	//ModelMatrixPlane = glm::rotate(ModelMatrixPlane, glm::radians(-45.0f), { 0,1,0 });
-	ModelMatrixPlane2 = glm::rotate(ModelMatrixPlane2, glm::radians(-90.0f), { 1,0,0 });
-	ModelMatrixPlane2 = glm::scale(ModelMatrixPlane2, vec3(0.5f, 0.5f, 0.5f));
-	glm::mat4 MVPplane2 = ProjectionMatrix * ViewMatrix * ModelMatrixPlane2;
-
-	glm::mat4 ModelMatrixViewPlane = glm::mat4(1.0);
-	ModelMatrixViewPlane = glm::translate(ModelMatrixViewPlane, glm::vec3(5.0f, 0.0f, 0.0f));
-	//ModelMatrixViewPlane = glm::rotate(ModelMatrixPlane, glm::radians(-45.0f), { 0,1,0 });
-	ModelMatrixViewPlane = glm::rotate(ModelMatrixViewPlane, glm::radians(-90.0f), { 0,0,1 });
-	//ModelMatrixViewPlane = glm::scale(ModelMatrixPlane, vec3(0.5f, 0.5f, 0.5f));
-	glm::mat4 MVPViewplane = ProjectionMatrix * ViewMatrix * ModelMatrixViewPlane;
 
 	glm::vec3 lightPos = glm::vec3(0, 0, -4);
 	glm::vec3 lightPos2 = glm::vec3(2.5, 3, -2.5);
+
 	do {
 
 		// Clear the screen
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		//glm::mat4 ProjectionMatrix = glm::perspective<float>(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
+		//glm::mat4 ViewMatrix = glm::lookAt(glm::vec3(2, 10, -10), glm::vec3(2, 0, 0), glm::vec3(0, 1 / sqrt(2), 1 / sqrt(2)));
+		//ViewMatrix = glm::rotate(ViewMatrix , glm::radians(45.0f), { 1,0,0 });
+
+		computeMatricesFromInputs();
+
+		glm::mat4 ProjectionMatrix = getProjectionMatrix();
+		glm::mat4 ViewMatrix = getViewMatrix();
+
+		glm::mat4 ModelMatrixLine = glm::mat4(1.0);
+		glm::mat4 MVPline = ProjectionMatrix * ViewMatrix * ModelMatrixLine;
+
+		glm::mat4 ModelMatrixSphere = glm::mat4(1.0);
+		ModelMatrixSphere = glm::scale(ModelMatrixSphere, glm::vec3(0.5f, 0.5f, 0.5f));
+		glm::mat4 MVPsphere = ProjectionMatrix * ViewMatrix * ModelMatrixSphere;
+
+		//for light source 1
+		glm::mat4 ModelMatrixLight1 = glm::mat4(1.0);
+		ModelMatrixLight1 = glm::translate(ModelMatrixLight1, glm::vec3(0.0f, 0.0f, -4.0f));
+		ModelMatrixLight1 = glm::scale(ModelMatrixLight1, glm::vec3(0.05f, 0.05f, 0.05f));
+		glm::mat4 MVPLight1 = ProjectionMatrix * ViewMatrix * ModelMatrixLight1;
+
+		//for light source 2
+		glm::mat4 ModelMatrixLight2 = glm::mat4(1.0);
+		ModelMatrixLight2 = glm::translate(ModelMatrixLight2, glm::vec3(2.5f, 3.0f, -2.5f));
+		ModelMatrixLight2 = glm::scale(ModelMatrixLight2, glm::vec3(0.05f, 0.05f, 0.05f));
+		glm::mat4 MVPLight2 = ProjectionMatrix * ViewMatrix * ModelMatrixLight2;
+
+		glm::mat4 ModelMatrixPlane = glm::mat4(1.0);
+		ModelMatrixPlane = glm::translate(ModelMatrixPlane, glm::vec3(-3.5f, 0.0f, 0.0f));
+		ModelMatrixPlane = glm::rotate(ModelMatrixPlane, glm::radians(-90.0f), { 1,0,0 });
+		ModelMatrixPlane = glm::rotate(ModelMatrixPlane, glm::radians(-90.0f), { 0,0,1 });
+		ModelMatrixPlane = glm::scale(ModelMatrixPlane, vec3(0.5f, 0.5f, 0.5f));
+		glm::mat4 MVPplane = ProjectionMatrix * ViewMatrix * ModelMatrixPlane;
+
+		glm::mat4 ModelMatrixPlane2 = glm::mat4(1.0);
+		ModelMatrixPlane2 = glm::translate(ModelMatrixPlane2, glm::vec3(0.0f, 0.0f, 3.5f));
+		//ModelMatrixPlane = glm::rotate(ModelMatrixPlane, glm::radians(-45.0f), { 0,1,0 });
+		ModelMatrixPlane2 = glm::rotate(ModelMatrixPlane2, glm::radians(-90.0f), { 1,0,0 });
+		ModelMatrixPlane2 = glm::scale(ModelMatrixPlane2, vec3(0.5f, 0.5f, 0.5f));
+		glm::mat4 MVPplane2 = ProjectionMatrix * ViewMatrix * ModelMatrixPlane2;
+
+		glm::mat4 ModelMatrixViewPlane = glm::mat4(1.0);
+		ModelMatrixViewPlane = glm::translate(ModelMatrixViewPlane, glm::vec3(5.0f, 0.0f, 0.0f));
+		//ModelMatrixViewPlane = glm::rotate(ModelMatrixPlane, glm::radians(-45.0f), { 0,1,0 });
+		ModelMatrixViewPlane = glm::rotate(ModelMatrixViewPlane, glm::radians(-90.0f), { 0,0,1 });
+		//ModelMatrixViewPlane = glm::scale(ModelMatrixPlane, vec3(0.5f, 0.5f, 0.5f));
+		glm::mat4 MVPViewplane = ProjectionMatrix * ViewMatrix * ModelMatrixViewPlane;
 
 		// Now render the lines
 
