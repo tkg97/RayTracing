@@ -322,6 +322,9 @@ public:
 		setTransformations(t, translationMat);
 	}
 
+	vector<Point> getCoordinates() {
+		return coordinates;
+	}
 	// get the intersection of ray with the polygon
 	IntersectionPoint* getIntersection(Ray r1, double minThreshold) {
 		r1 = getTransformedRay(r1, getInverseVertexTransformationMatrix(), getRayTransformation());
@@ -449,7 +452,33 @@ class Box : public Object {
 	}
 
 	pair<int, int> getImageCoordinates(Point p) override {
-		return { 0,0 };
+		int u, v;
+		for (int i = 0; i < polygonFaces.size(); i++) {
+			vector<Point> coordinates = polygonFaces[i].getCoordinates();
+			double area1 = TriangleArea(p, coordinates[1], coordinates[2]);
+			double area2 = TriangleArea(p, coordinates[0], coordinates[2]);
+			double area3 = TriangleArea(p, coordinates[1], coordinates[0]);
+			double Area = TriangleArea(coordinates[0], coordinates[1], coordinates[2]);
+
+			double area4 = TriangleArea(p, coordinates[0], coordinates[3]);
+			double area5 = TriangleArea(p, coordinates[0], coordinates[2]);
+			double area6 = TriangleArea(p, coordinates[2], coordinates[3]);
+			double Area1 = TriangleArea(coordinates[0], coordinates[2], coordinates[3]);
+
+			vector<double> param1 = { area1 / Area, area2 / Area , area3 / Area };
+			vector<double> param2 = { area4 / Area1, area5 / Area1 , area6 / Area1 };
+			Material objectMat = getObjectMaterial();
+			if (param1[0] <= 1.0001 && param1[0] >= -0.0001 && param1[0] <= 1.0001 && param1[1] >= -0.0001 && param1[2] <= 1.0001 && param1[2] >= -0.0001 && (param1[0] + param1[1] + param1[2]) <= 1.0001)
+			{
+				u = (int)((param1[1] + param1[2])*objectMat.getImageWidth());
+				v = (int)(param1[2] * objectMat.getImageHeight());
+			}
+			else if(param2[0] <= 1.0001 && param2[0] >= -0.0001 && param2[0] <= 1.0001 && param2[1] >= -0.0001 && param2[2] <= 1.0001 && param2[2] >= -0.0001 && (param2[0] + param2[1] + param2[2]) <= 1.0001){
+				u = (int)((param2[0])*objectMat.getImageWidth());
+				v = (int)((param2[0] + param2[1]) * objectMat.getImageHeight());
+			}
+		}
+		return { u,v };
 	}
 
 public:
