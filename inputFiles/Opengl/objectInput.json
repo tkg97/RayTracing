@@ -1,54 +1,83 @@
 [
-    {
-        "material": {
-            "ambientCoefficients": [ 0.2, 0.2, 0.2 ],
-            "diffusionCoefficients": [ 0.4, 0.8, 0.8 ],
-            "phongExponent": 5,
-            "reflectionConstant": 0.5,
-            "refractionConstant": 0.5,
-            "refractiveIndex": 5,
-            "specularCoefficients": [ 0.2, 0.2, 0.2 ],
-            "texture": ""
-        },
-        "parameters": {
-            "radius": 3,
-            "center": [ 0, 0, 0 ]
-        },
-        "type": "sphere",
-        "affineTransformation": [
-            [ 0.5, 0, 0, 0 ],
-            [ 0, 0.5, 0, 0 ],
-            [ 0, 0, 0.5, 0 ],
-            [ 0, 0, 0, 1 ]
-        ]
+  {
+    "material": {
+      "ambientCoefficients": [ 0.2, 0.2, 0.2 ],
+      "diffusionCoefficients": [ 0.4, 0.8, 0.8 ],
+      "phongExponent": 5,
+      "reflectionConstant": 0,
+      "refractionConstant": 0.5,
+      "refractiveIndex": 5,
+      "specularCoefficients": [ 0.2, 0.2, 0.2 ],
+      "texture": "inputFiles/Opengl/texture_red.bmp"
     },
-    {
-        "material": {
-            "ambientCoefficients": [ 0.1, 0.1, 0.1 ],
-            "diffusionCoefficients": [ 0.1, 0.8, 0.1 ],
-            "phongExponent": 5,
-            "reflectionConstant": 0.6,
-            "refractionConstant": 0,
-            "refractiveIndex": 5,
-            "specularCoefficients": [ 0.2, 0.2, 0.2 ],
-            "texture": ""
-        },
-        "parameters": {
-            "vertexCount": 4,
-            "coordinates": [
-                [ 7, 0, -7 ],
-                [ -7, 0, -7 ],
-                [ -7, 0, 7 ],
-                [ 7, 0, 7 ]
-            ],
-            "center": [ 0, 0, 0 ]
-        },
-        "type": "polygon",
-        "affineTransformation": [
-            [ 0.353, 0, 0.353, 0 ],
-            [ 0.353, 0, -0.353, 0 ],
-            [ 0,0.5, 0, 0 ],
-            [ -10, 0, 0, 1 ]
-        ]
-    }
+    "parameters": {
+      "radius": 3,
+      "center": [ 0, 0, 0 ]
+    },
+    "type": "sphere",
+    "affineTransformation": [
+      [ 0.5, 0, 0, 0 ],
+      [ 0, 0.5, 0, 0 ],
+      [ 0, 0, 0.5, 0 ],
+      [ 0, 0, 0, 1 ]
+    ]
+  },
+  {
+    "material": {
+      "ambientCoefficients": [ 0.1, 0.1, 0.1 ],
+      "diffusionCoefficients": [ 0.1, 0.8, 0.1 ],
+      "phongExponent": 5,
+      "reflectionConstant": 0.3,
+      "refractionConstant": 0,
+      "refractiveIndex": 5,
+      "specularCoefficients": [ 0.2, 0.2, 0.2 ],
+      "texture": ""
+    },
+    "parameters": {
+      "vertexCount": 4,
+      "coordinates": [
+        [ 7, 0, -7 ],
+        [ -7, 0, -7 ],
+        [ -7, 0, 7 ],
+        [ 7, 0, 7 ]
+      ],
+      "center": [ 0, 0, 0 ]
+    },
+    "type": "polygon",
+    "affineTransformation": [
+      [ 0.5, 0, 0, 0 ],
+      [ 0, 0, -0.5, 0 ],
+      [ 0, 0.5, 0, 0 ],
+      [ 0, 0, 3.5, 1 ]
+    ]
+  },
+  {
+    "material": {
+      "ambientCoefficients": [ 0.1, 0.1, 0.1 ],
+      "diffusionCoefficients": [ 0.1, 0.8, 0.1 ],
+      "phongExponent": 5,
+      "reflectionConstant": 0,
+      "refractionConstant": 0,
+      "refractiveIndex": 5,
+      "specularCoefficients": [ 0.2, 0.2, 0.2 ],
+      "texture": "inputFiles/Opengl/texture_grey.bmp"
+    },
+    "parameters": {
+      "vertexCount": 4,
+      "coordinates": [
+        [ 7, 0, -7 ],
+        [ -7, 0, -7 ],
+        [ -7, 0, 7 ],
+        [ 7, 0, 7 ]
+      ],
+      "center": [ 0, 0, 0 ]
+    },
+    "type": "polygon",
+    "affineTransformation": [
+      [ 0, -0.5, 0, 0 ],
+      [ 0.5, 0, 0, 0 ],
+      [ 0, 0 ,0.5, 0 ],
+      [ -3.5, 0, 0, 1 ]
+    ]
+  }
 ]

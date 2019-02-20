@@ -43,19 +43,21 @@ int render(const std::vector<float>& originalRayData, const std::vector<float>& 
 
 	// Get a handle for our "LightPosition" uniform
 	GLuint LightID = glGetUniformLocation(programID, "LightPosition_worldspace");
+	GLuint LightID1 = glGetUniformLocation(programID, "LightPosition_worldspace1");
 	GLuint colorID = glGetUniformLocation(programIDline, "in_color");
 
 	// Load the texture
 	GLuint TextureSphere = loadBMP_custom("inputFiles/Opengl/texture_red.bmp");
 	GLuint TexturePlane = loadBMP_custom("inputFiles/Opengl/texture_grey.bmp");
+	GLuint TextureViewPlane = loadBMP_custom("inputFiles/Opengl/rayTrace.bmp");
 
 	// Get a handle for our "myTextureSampler" uniform
 	GLuint TextureID = glGetUniformLocation(programID, "myTextureSampler");
 
 	// Read our .obj file
-	std::vector<glm::vec3> verticesSphere, verticesPlane;
-	std::vector<glm::vec2> uvsSphere, uvsPlane;
-	std::vector<glm::vec3> normalsSphere, normalsPlane;
+	std::vector<glm::vec3> verticesSphere, verticesPlane, verticesViewPlane, verticesPlane2;
+	std::vector<glm::vec2> uvsSphere, uvsPlane , uvsViewPlane, uvsPlane2;
+	std::vector<glm::vec3> normalsSphere, normalsPlane, normalsViewPlane, normalsPlane2;
 	bool res = loadOBJ("inputFiles/Opengl/sphere.obj", verticesSphere, uvsSphere, normalsSphere);
 
 	if (!res) exit(-1);
@@ -64,6 +66,10 @@ int render(const std::vector<float>& originalRayData, const std::vector<float>& 
 
 	if (!res) exit(-1);
 
+
+	res = loadOBJ("inputFiles/Opengl/planewindow.obj", verticesViewPlane, uvsViewPlane, normalsViewPlane);
+
+	if (!res) exit(-1);
 	// Load it into a VBO Sphere
 
 	GLuint vertexbufferSphere;
@@ -86,6 +92,19 @@ int render(const std::vector<float>& originalRayData, const std::vector<float>& 
 	GLuint normalbufferPlane;
 	setupBuffer(normalbufferPlane, (normalsPlane.size() * sizeof(glm::vec3)), (&normalsPlane[0]));
 
+
+
+	// Load it into a VBO Plane
+
+	GLuint vertexbufferViewPlane;
+	setupBuffer(vertexbufferViewPlane, (verticesViewPlane.size() * sizeof(glm::vec3)), (&verticesViewPlane[0]));
+
+	GLuint uvbufferViewPlane;
+	setupBuffer(uvbufferViewPlane, (uvsViewPlane.size() * sizeof(glm::vec2)), (&uvsViewPlane[0]));
+
+	GLuint normalbufferViewPlane;
+	setupBuffer(normalbufferViewPlane, (normalsViewPlane.size() * sizeof(glm::vec3)), (&normalsViewPlane[0]));
+
 	// VBO for lines
 
 	GLuint vertexbufferLineOriginal;
@@ -101,7 +120,8 @@ int render(const std::vector<float>& originalRayData, const std::vector<float>& 
 	setupBuffer(vertexbufferLineRefraction, (refractedRayData.size() * sizeof(float)), (&refractedRayData[0]));
 
 	glm::mat4 ProjectionMatrix = glm::perspective<float>(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
-	glm::mat4 ViewMatrix = glm::lookAt(glm::vec3(0, 20, 0), glm::vec3(0, -1, 0), glm::vec3(-1, 0, 0));
+	glm::mat4 ViewMatrix = glm::lookAt(glm::vec3(2, 10, -10), glm::vec3(2, 0, 0), glm::vec3(0, 1/sqrt(2), 1/sqrt(2)));
+	//ViewMatrix = glm::rotate(ViewMatrix , glm::radians(45.0f), { 1,0,0 });
 
 	glm::mat4 ModelMatrixLine = glm::mat4(1.0);
 	glm::mat4 MVPline = ProjectionMatrix * ViewMatrix * ModelMatrixLine;
@@ -110,15 +130,41 @@ int render(const std::vector<float>& originalRayData, const std::vector<float>& 
 	ModelMatrixSphere = glm::scale(ModelMatrixSphere, glm::vec3(0.5f, 0.5f, 0.5f));
 	glm::mat4 MVPsphere = ProjectionMatrix * ViewMatrix * ModelMatrixSphere;
 
+	//for light source 1
+	glm::mat4 ModelMatrixLight1 = glm::mat4(1.0);
+	ModelMatrixLight1 = glm::translate(ModelMatrixLight1, glm::vec3(0.0f, 0.0f, -4.3f));
+	ModelMatrixLight1 = glm::scale(ModelMatrixLight1, glm::vec3(0.05f, 0.05f, 0.05f));
+	glm::mat4 MVPLight1 = ProjectionMatrix * ViewMatrix * ModelMatrixLight1;
+
+	//for light source 2
+	glm::mat4 ModelMatrixLight2 = glm::mat4(1.0);
+	ModelMatrixLight2 = glm::translate(ModelMatrixLight2, glm::vec3(2.8f, 3.0f, -2.5f));
+	ModelMatrixLight2 = glm::scale(ModelMatrixLight2, glm::vec3(0.05f, 0.05f, 0.05f));
+	glm::mat4 MVPLight2 = ProjectionMatrix * ViewMatrix * ModelMatrixLight2;
+
 	glm::mat4 ModelMatrixPlane = glm::mat4(1.0);
-	ModelMatrixPlane = glm::translate(ModelMatrixPlane, glm::vec3(-10.0f, 0.0f, 0.0f));
-	ModelMatrixPlane = glm::rotate(ModelMatrixPlane, glm::radians(-45.0f), { 0,1,0 });
+	ModelMatrixPlane = glm::translate(ModelMatrixPlane, glm::vec3(-3.5f, 0.0f, 0.0f));
 	ModelMatrixPlane = glm::rotate(ModelMatrixPlane, glm::radians(-90.0f), { 1,0,0 });
+	ModelMatrixPlane = glm::rotate(ModelMatrixPlane, glm::radians(-90.0f), { 0,0,1 });
 	ModelMatrixPlane = glm::scale(ModelMatrixPlane, vec3(0.5f, 0.5f, 0.5f));
 	glm::mat4 MVPplane = ProjectionMatrix * ViewMatrix * ModelMatrixPlane;
 
-	glm::vec3 lightPos = glm::vec3(0, 0, -8);
+	glm::mat4 ModelMatrixPlane2 = glm::mat4(1.0);
+	ModelMatrixPlane2 = glm::translate(ModelMatrixPlane2, glm::vec3(0.0f, 0.0f, 3.5f));
+	//ModelMatrixPlane = glm::rotate(ModelMatrixPlane, glm::radians(-45.0f), { 0,1,0 });
+	ModelMatrixPlane2 = glm::rotate(ModelMatrixPlane2, glm::radians(-90.0f), { 1,0,0 });
+	ModelMatrixPlane2 = glm::scale(ModelMatrixPlane2, vec3(0.5f, 0.5f, 0.5f));
+	glm::mat4 MVPplane2 = ProjectionMatrix * ViewMatrix * ModelMatrixPlane2;
 
+	glm::mat4 ModelMatrixViewPlane = glm::mat4(1.0);
+	ModelMatrixViewPlane = glm::translate(ModelMatrixViewPlane, glm::vec3(5.0f, 0.0f, 0.0f));
+	//ModelMatrixViewPlane = glm::rotate(ModelMatrixPlane, glm::radians(-45.0f), { 0,1,0 });
+	ModelMatrixViewPlane = glm::rotate(ModelMatrixViewPlane, glm::radians(-90.0f), { 0,0,1 });
+	//ModelMatrixViewPlane = glm::scale(ModelMatrixPlane, vec3(0.5f, 0.5f, 0.5f));
+	glm::mat4 MVPViewplane = ProjectionMatrix * ViewMatrix * ModelMatrixViewPlane;
+
+	glm::vec3 lightPos = glm::vec3(0, 0, -4);
+	glm::vec3 lightPos2 = glm::vec3(2.5, 3, -2.5);
 	do {
 
 		// Clear the screen
@@ -173,7 +219,7 @@ int render(const std::vector<float>& originalRayData, const std::vector<float>& 
 		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
 
 		glUniform3f(LightID, lightPos.x, lightPos.y, lightPos.z);
-
+		glUniform3f(LightID1, lightPos2.x, lightPos2.y, lightPos2.z);
 		// Bind our texture in Texture Unit 0
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, TextureSphere);
@@ -197,6 +243,70 @@ int render(const std::vector<float>& originalRayData, const std::vector<float>& 
 
 		// Draw the triangles !
 		glDrawArrays(GL_TRIANGLES, 0, verticesSphere.size());
+
+
+		//now rendering lights
+
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVPLight1[0][0]);
+		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrixLight1[0][0]);
+		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
+
+		// Bind our texture in Texture Unit 0
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, TexturePlane);
+		// Set our "myTextureSampler" sampler to use Texture Unit 0
+		glUniform1i(TextureID, 0);
+
+		// 1rst attribute buffer : vertices
+		glBindBuffer(GL_ARRAY_BUFFER, vertexbufferSphere);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+		// 2nd attribute buffer : UVs
+		glBindBuffer(GL_ARRAY_BUFFER, uvbufferSphere);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+		// 3rd attribute buffer : normals
+		glBindBuffer(GL_ARRAY_BUFFER, normalbufferSphere);
+		glEnableVertexAttribArray(2);
+		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+		// Draw the triangles !
+		glDrawArrays(GL_TRIANGLES, 0, verticesSphere.size());
+
+
+		//rendering light 2
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVPLight2[0][0]);
+		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrixLight2[0][0]);
+		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
+
+		// Bind our texture in Texture Unit 0
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, TexturePlane);
+		// Set our "myTextureSampler" sampler to use Texture Unit 0
+		glUniform1i(TextureID, 0);
+
+		// 1rst attribute buffer : vertices
+		glBindBuffer(GL_ARRAY_BUFFER, vertexbufferSphere);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+		// 2nd attribute buffer : UVs
+		glBindBuffer(GL_ARRAY_BUFFER, uvbufferSphere);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+		// 3rd attribute buffer : normals
+		glBindBuffer(GL_ARRAY_BUFFER, normalbufferSphere);
+		glEnableVertexAttribArray(2);
+		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+		// Draw the triangles !
+		glDrawArrays(GL_TRIANGLES, 0, verticesSphere.size());
+
+
+
 
 		// now rendering of plane
 
@@ -229,6 +339,65 @@ int render(const std::vector<float>& originalRayData, const std::vector<float>& 
 
 		// Draw the triangles !
 		glDrawArrays(GL_TRIANGLES, 0, verticesPlane.size());
+
+		//2nd plane rendering
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVPplane2[0][0]);
+		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrixPlane2[0][0]);
+		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
+
+		// Bind our texture in Texture Unit 0
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, TexturePlane);
+		// Set our "myTextureSampler" sampler to use Texture Unit 0
+		glUniform1i(TextureID, 0);
+
+		// 1rst attribute buffer : vertices
+		glBindBuffer(GL_ARRAY_BUFFER, vertexbufferPlane);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+		// 2nd attribute buffer : UVs
+		glBindBuffer(GL_ARRAY_BUFFER, uvbufferPlane);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+		// 3rd attribute buffer : normals
+		glBindBuffer(GL_ARRAY_BUFFER, normalbufferPlane);
+		glEnableVertexAttribArray(2);
+		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+		// Draw the triangles !
+		glDrawArrays(GL_TRIANGLES, 0, verticesPlane.size());
+
+
+		//viewing plane
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVPViewplane[0][0]);
+		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrixViewPlane[0][0]);
+		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
+
+		// Bind our texture in Texture Unit 0
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, TextureViewPlane);
+		// Set our "myTextureSampler" sampler to use Texture Unit 0
+		glUniform1i(TextureID, 0);
+
+		// 1rst attribute buffer : vertices
+		glBindBuffer(GL_ARRAY_BUFFER, vertexbufferViewPlane);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+		// 2nd attribute buffer : UVs
+		glBindBuffer(GL_ARRAY_BUFFER, uvbufferViewPlane);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+		// 3rd attribute buffer : normals
+		glBindBuffer(GL_ARRAY_BUFFER, normalbufferViewPlane);
+		glEnableVertexAttribArray(2);
+		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+		// Draw the triangles !
+		glDrawArrays(GL_TRIANGLES, 0, verticesViewPlane.size());
 
 		glDisableVertexAttribArray(0);
 		glDisableVertexAttribArray(1);
