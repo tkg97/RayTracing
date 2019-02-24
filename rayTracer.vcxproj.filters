@@ -18,72 +18,72 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="jsoncpp.cpp">
+    <ClCompile Include="src\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="main.cpp">
+    <ClCompile Include="src\jsoncpp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="openGLrendering.cpp">
+    <ClCompile Include="src\openGLrendering.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="common\objloader.cpp">
+    <ClCompile Include="Dependencies\common\controls.cpp">
       <Filter>common</Filter>
     </ClCompile>
-    <ClCompile Include="common\shader.cpp">
+    <ClCompile Include="Dependencies\common\objloader.cpp">
       <Filter>common</Filter>
     </ClCompile>
-    <ClCompile Include="common\texture.cpp">
+    <ClCompile Include="Dependencies\common\shader.cpp">
       <Filter>common</Filter>
     </ClCompile>
-    <ClCompile Include="common\controls.cpp">
+    <ClCompile Include="Dependencies\common\texture.cpp">
       <Filter>common</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="bmpImageHandler.h">
+    <ClInclude Include="headers\light.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="camera.h">
+    <ClInclude Include="headers\bmpImageHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="light.h">
+    <ClInclude Include="headers\camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="object.h">
+    <ClInclude Include="headers\matrixAlgebra.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="point.h">
+    <ClInclude Include="headers\object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="scene.h">
+    <ClInclude Include="headers\openGLrendering.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="sceneCreator.h">
+    <ClInclude Include="headers\point.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="json\json-forwards.h">
+    <ClInclude Include="headers\scene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="json\json.h">
+    <ClInclude Include="headers\sceneCreator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="openGLrendering.h">
+    <ClInclude Include="Dependencies\json\json.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="common\objloader.hpp">
+    <ClInclude Include="Dependencies\json\json-forwards.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Dependencies\common\controls.hpp">
       <Filter>common</Filter>
     </ClInclude>
-    <ClInclude Include="common\shader.hpp">
+    <ClInclude Include="Dependencies\common\objloader.hpp">
       <Filter>common</Filter>
     </ClInclude>
-    <ClInclude Include="common\texture.hpp">
+    <ClInclude Include="Dependencies\common\shader.hpp">
       <Filter>common</Filter>
     </ClInclude>
-    <ClInclude Include="matrixAlgebra.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="common\controls.hpp">
+    <ClInclude Include="Dependencies\common\texture.hpp">
       <Filter>common</Filter>
     </ClInclude>
   </ItemGroup>

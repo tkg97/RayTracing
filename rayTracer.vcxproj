@@ -100,7 +100,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\GLM;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\GLM;$(SolutionDir)headers;$(SolutionDir)Dependencies\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>GLEW_STATIC</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -110,7 +110,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\GLM;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\GLM;$(SolutionDir)headers;$(SolutionDir)Dependencies\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>GLEW_STATIC</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -119,30 +119,30 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="common\controls.cpp" />
-    <ClCompile Include="common\objloader.cpp" />
-    <ClCompile Include="common\shader.cpp" />
-    <ClCompile Include="common\texture.cpp" />
-    <ClCompile Include="jsoncpp.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="openGLrendering.cpp" />
+    <ClCompile Include="Dependencies\common\controls.cpp" />
+    <ClCompile Include="Dependencies\common\objloader.cpp" />
+    <ClCompile Include="Dependencies\common\shader.cpp" />
+    <ClCompile Include="Dependencies\common\texture.cpp" />
+    <ClCompile Include="src\jsoncpp.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\openGLrendering.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="bmpImageHandler.h" />
-    <ClInclude Include="camera.h" />
-    <ClInclude Include="common\controls.hpp" />
-    <ClInclude Include="common\objloader.hpp" />
-    <ClInclude Include="common\shader.hpp" />
-    <ClInclude Include="common\texture.hpp" />
-    <ClInclude Include="json\json-forwards.h" />
-    <ClInclude Include="json\json.h" />
-    <ClInclude Include="light.h" />
-    <ClInclude Include="matrixAlgebra.h" />
-    <ClInclude Include="object.h" />
-    <ClInclude Include="openGLrendering.h" />
-    <ClInclude Include="point.h" />
-    <ClInclude Include="scene.h" />
-    <ClInclude Include="sceneCreator.h" />
+    <ClInclude Include="headers\bmpImageHandler.h" />
+    <ClInclude Include="headers\camera.h" />
+    <ClInclude Include="Dependencies\common\controls.hpp" />
+    <ClInclude Include="Dependencies\common\objloader.hpp" />
+    <ClInclude Include="Dependencies\common\shader.hpp" />
+    <ClInclude Include="Dependencies\common\texture.hpp" />
+    <ClInclude Include="Dependencies\json\json-forwards.h" />
+    <ClInclude Include="Dependencies\json\json.h" />
+    <ClInclude Include="headers\light.h" />
+    <ClInclude Include="headers\matrixAlgebra.h" />
+    <ClInclude Include="headers\object.h" />
+    <ClInclude Include="headers\openGLrendering.h" />
+    <ClInclude Include="headers\point.h" />
+    <ClInclude Include="headers\scene.h" />
+    <ClInclude Include="headers\sceneCreator.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

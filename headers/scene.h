@@ -228,7 +228,8 @@ public:
 		vector<float>& originalRayData, vector<float>& shadowRayData, vector<float>& reflectedRayData, vector<float>& refractedRayData) {
 		for (int i = 0;i < raysData.size();i++) {
 			if (raysData[i].screenI == pixelI && raysData[i].screenJ == pixedJ) {
-				vector<double> data({ raysData[i].start.x, raysData[i].start.y, raysData[i].start.z, raysData[i].end.x, raysData[i].end.y, raysData[i].end.z });
+				vector<float> data({ (float)raysData[i].start.x, (float)raysData[i].start.y, (float)raysData[i].start.z,
+					(float)raysData[i].end.x, (float)raysData[i].end.y, (float)raysData[i].end.z });
 				switch (raysData[i].type) {
 				case rayType::Original:
 					originalRayData.insert(originalRayData.end(), data.begin(), data.end());
