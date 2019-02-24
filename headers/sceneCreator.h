@@ -1,5 +1,5 @@
 #include "json/json.h"
-#include "object.h" 
+#include "allObjects.h" 
 #include "light.h"
 #include "scene.h"
 #include <fstream>

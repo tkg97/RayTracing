@@ -86,5 +86,8 @@
     <ClInclude Include="Dependencies\common\texture.hpp">
       <Filter>common</Filter>
     </ClInclude>
+    <ClInclude Include="headers\sphere.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

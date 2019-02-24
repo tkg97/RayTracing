@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include <cfloat>
-#include "object.h"
+#include "allObjects.h"
 #include "light.h"
 #include <cmath>
 #include <limits.h>
